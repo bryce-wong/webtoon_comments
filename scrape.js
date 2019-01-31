@@ -1,4 +1,4 @@
-var url = 'http://therapboard.com';
+var url ='https://www.webtoons.com/en/challenge/tested/heck-of-a-start/viewer?title_no=231173&episode_no=1';
 var page = new WebPage();
 var fs = require('fs');
 

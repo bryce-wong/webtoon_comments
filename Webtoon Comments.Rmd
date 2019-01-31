@@ -19,14 +19,14 @@ Some things to note:
 
 *Will be following ethical principles as outlined [here]("https://towardsdatascience.com/ethics-in-web-scraping-b96b18136f01"").
 
-*Will also be learning how to scrape a javascript page from R Ladies NYC [here]("http://www.rladiesnyc.org/post/scraping-javascript-websites-in-r/#javascript-webscraping-in-r").
+*Will also be adapting how to scrape a javascript page from R Ladies NYC [here]("http://www.rladiesnyc.org/post/scraping-javascript-websites-in-r/#javascript-webscraping-in-r").
 
 *Finally, I have looked at Webtoon's robots.txt and it looks like I should be able to scrape comments.
 
 ```{r javascript code}
 # write the javascript code to a new file, scrape.js
 
-writeLines("var url = 'http://therapboard.com';
+writeLines("var url = 'http://example.com';
 var page = new WebPage();
 var fs = require('fs');
 
@@ -44,17 +44,17 @@ function just_wait() {
 ```
 
 ```{r converting to html}
-js_scrape <- function(url = "https://www.webtoons.com/en/challenge/tested/heck-of-a-start/viewer?title_no=231173&episode_no=1", 
-                      js_path = "scrape.js", 
-                      phantompath = "C:/Users/Dell/Documents/4th Semester - MPH/AI/phantomjs-2.1.1-windows/phantomjs-2.1.1-windows/bin"){
+js_scrape <- function(
+                      url = "https://www.webtoons.com/en/challenge/tested/heck-of-a-start/viewer?title_no=231173&episode_no=1", 
+                      js_path = "scrape.js"){
   
   # this section will replace the url in scrape.js to whatever you want 
   lines <- readLines(js_path)
   lines[1] <- paste0("var url ='", url ,"';")
   writeLines(lines, js_path)
   
-  command = paste(phantompath, js_path, sep = " ")
-  system(command)
+  #command = paste(phantompath, js_path, sep = " ")
+  system("phantomjs scrape.js")
 
 }
 
@@ -63,7 +63,7 @@ js_scrape()
 
 ```{r scrape comments}
 # read the newly created html file 
-html <- read_html("1.html")
+html <- read_html("comments.html")
 
 c <- html %>% 
   html_nodes(".u_cbox_contents") %>%
@@ -72,31 +72,7 @@ c <- html %>%
 reviews = tibble(
   comments = c
 )
-
-%>% 
-  str_c("") %>% 
-  as_tibble() %>% 
-  filter(!str_detect(value, 'ogg"')) %>%  
-  lapply(., str_replace, '<source src=\"', "http://therapboard.com/") %>% 
-  lapply(., str_split, "\" type")
-
-mp3s = map(seq_along(setup$value), ~setup$value[[.x]][1]) 
-
-url = "https://www.webtoons.com/en/challenge/tested/heck-of-a-start/viewer?title_no=231173&episode_no=1"
-
-webtoon_html = read_html(url)
-
-c = webtoon_html %>%
-  html_nodes(".u_cbox_contents")
-
-c %>% html_structure()
-
-%>%
-  html_text()
-
-reviews = tibble(
-  comments = c
-)
 ```
+
 
 
