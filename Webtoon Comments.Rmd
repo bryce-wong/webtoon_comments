@@ -27,7 +27,8 @@ Some things to note:
 # write the javascript code to a new file, scrape.js
 
 writeLines("var url = 'http://example.com';
-var page = new WebPage();
+var webPage = require('webpage');
+var page = webPage.create();
 var fs = require('fs');
 
 page.open(url, function (status) {
@@ -36,17 +37,20 @@ page.open(url, function (status) {
 
 function just_wait() {
     setTimeout(function() {
-               fs.write('comments.html', page.content, 'w');
+            page.includeJs('http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js', function(){
+                page.evaluate(function(){
+                  $('u_cbox_btn_reply').click();
+                });
+            fs.write('comments.html', page.content, 'w');
             phantom.exit();
+            });
     }, 2500);
 }
 ", con = "scrape.js")
 ```
 
 ```{r converting to html}
-js_scrape <- function(
-                      url = "https://www.webtoons.com/en/challenge/tested/heck-of-a-start/viewer?title_no=231173&episode_no=1", 
-                      js_path = "scrape.js"){
+js_scrape <- function(url, js_path){
   
   # this section will replace the url in scrape.js to whatever you want 
   lines <- readLines(js_path)
@@ -58,7 +62,8 @@ js_scrape <- function(
 
 }
 
-js_scrape()
+js_scrape(url = "https://www.webtoons.com/en/challenge/tested/heck-of-a-start/viewer?title_no=231173&episode_no=1", 
+                      js_path = "scrape.js")
 ```
 
 ```{r scrape comments}
