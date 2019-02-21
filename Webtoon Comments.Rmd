@@ -10,7 +10,8 @@ library(rvest)
 library(stringr)
 library(tidyverse)
 library(purrr)
-library(here)
+library(XML)
+library(RSelenium)
 ```
 
 ### Webscraping Webtoon comments 
@@ -25,63 +26,177 @@ Some things to note:
 
 Reading in comments from the first episode:
 
-Needed to download JAVA and the chrome webdriver.
+Make sure you've already downloaded JAVA.
 
 ```{r starting server}
-library(RSelenium)
 driver = rsDriver(browser = c("chrome"))
 remDr = driver[["client"]]
 ```
 
-TO DO:
-- issue with page not fully loading
-- issue with being an anchor inside a div
-- FIXED IT ALL HELL YEAH
+Overview of the process:
+1. grab all URLs
+2. map fxn onto URLS [comment_df = map_df(listofURLs, fxn)]
 
-```{r}
+fxn (mapping):
+- read URL
+- scrape (another fxn)
+- search for 2nd page of comments
+  - if 2nd page exists, scrape (same as above fxn)
+  
+fxn (scrape):
+- find all reply buttons
+- open all reply buttons
+- parse text
+- add to data frame
+
+fxn (grab URLs):
+- open first URL, save to dataframe
+- navigate to next page, save to dataframe
+- continue until no more "next pages"
+
+```{r map function}
+mapping_function = function(url){
+    
+  #navigate to URL
+  remDr$navigate(url)
+  
+  Sys.sleep(2)
+  
+  #scrape
+  df = scrape_comments()
+  
+  Sys.sleep(2)
+  
+  remDr$refresh()
+  
+  Sys.sleep(2)
+  
+  #navigate to page with other comments (if it exists)
+  #this code may break if there are more than 2 comment pages
+  other_replies <- remDr$findElement(using = 'css',  value = "[class = 'u_cbox_next u_cbox_next_end']")
+  
+  Sys.sleep(1)
+  
+  while (other_replies$isElementDisplayed()[[1]]) {
+    #print("Logo is visible")
+    
+    other_replies$clickElement()
+    
+    Sys.sleep(2)
+    
+    #if other comments page exists, scrape
+    df2 = scrape_comments()
+    
+    df = bind_rows(df, df2)
+    
+    #remDr$refresh()
+    
+    other_replies <- remDr$findElement(using = 'css',  value = "[class = 'u_cbox_next u_cbox_next_end']")
+  } 
+  
+  #output the final df
+  df
+}
+
+```
+
+```{r scraping function}
 scrape_comments = function(){
+  
+  #find all reply buttons
   replies <- remDr$findElements(using = "class name",  value = "u_cbox_btn_reply")
   
+  #open all reply buttons
   for (i in 1:length(replies)) {
     replies[[i]]$sendKeysToElement(list("laptops",key = "enter"))
     Sys.sleep(1)
   }
+
+  #parse comments 
+  doc <- read_html(remDr$getPageSource()[[1]])
+
+  replies_text = doc %>%
+    html_nodes(".u_cbox_contents") %>%
+    html_text()
+
+  #add to dataframe
+  data_frame(replies_text)
+
 }
 ```
 
-```{r scraping}
-remDr$navigate("https://www.webtoons.com/en/challenge/tested/heck-of-a-start/viewer?title_no=231173&episode_no=1")
+```{r grabbing URLs function}
+grab_urls = function(first_url, home_page){
+  
+  #navigate to home page
+  remDr$navigate(home_page)
+  home_raw_page <- read_html(remDr$getPageSource()[[1]])
+  list_of_eps = home_raw_page %>% 
+    html_nodes(".tx") %>%
+    html_text() 
 
+  #extract number of last episode
+  list_of_eps = list_of_eps %>% 
+    str_replace_all("[[:punct:]]", "") 
+  
+  last_ep = as.numeric(list_of_eps[1])
+  
+  #initialize my list
+  list_of_urls <- vector("list", last_ep)
+  list_of_urls <- NULL
+  
+  #initialize the boundaries of my while loop
+  beyond_last_ep = last_ep + 1
+  i = 1
+  
+  Sys.sleep(5)
+  
+  #navigate to first url
+  remDr$navigate(first_url)
+  
+  while (i < beyond_last_ep) {
+    
+    raw_page <- read_html(remDr$getPageSource()[[1]])
+  
+    Sys.sleep(2)
+    
+    #add url to list
+    list_of_urls[[i]] = raw_page %>% 
+      html_nodes(xpath = '//meta[@property="og:url"]') %>%
+      html_attr('content')
+
+    if (i != last_ep) {
+      #find next page button
+      next_page <- remDr$findElement(using = 'css',  value = "[class = 'pg_next _nextEpisode NPI=a:next,g:en_en']")
+  
+      #move to the next page
+      next_page$clickElement()
+    }
+    
+    i = i + 1
+    
+  }
+
+  #output list
+  list_of_urls
+  
+}
+
+```
+
+```{r putting it all together}
 #remDr$refresh()
 
-Sys.sleep(10)
+first_url = "https://www.webtoons.com/en/challenge/tested/heck-of-a-start/viewer?title_no=231173&episode_no=1"
 
-scrape_comments()
+home_page = "https://www.webtoons.com/en/challenge/tested/list?title_no=231173"
 
-other_replies <- NULL
+#grab all the URLs of every episode
+urls_list = grab_urls(first_url, home_page)
 
-other_replies <- remDr$findElement(using = 'css',  value = "[class = 'u_cbox_next u_cbox_next_end']")
+#scrape comments from every episode
+comment_df = map_df(urls_list, mapping_function)
 
-while (!is.null(other_replies)) {
-  
-  other_replies$clickElement()
-  
-  scrape_comments()
-
-  other_replies <- remDr$findElement(using = 'css',  value = "[class = 'u_cbox_next u_cbox_next_end']")
-}
-
-Sys.sleep(2)
-
-next_page <- NULL
-
-next_page <- remDr$findElement(using = 'css',  value = "[class = 'pg_next _nextEpisode NPI=a:next,g:en_en']")
-
-Sys.sleep(2)
-
-if (!is.null(next_page)) {
-  next_page$clickElement()
-}
 ```
 
 ```{r stop server}
@@ -89,7 +204,6 @@ remDr$close()
 driver$server$stop()
 driver$server$process
 ```
-
-
-
+  
+  
 
