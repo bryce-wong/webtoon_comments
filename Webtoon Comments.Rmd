@@ -46,8 +46,15 @@ fxn (mapping):
 fxn (scrape):
 - find all reply buttons
 - open all reply buttons
-- parse text
-- add to data frame
+- parse fxn
+- find "more replies" button and open all
+- parse fxn + bind rows
+- delete duplicants
+- output data frame
+
+fxn (parse):
+- extract episode, comment, username, likes, reply or not
+- output data frame 
 
 fxn (grab URLs):
 - open first URL, save to dataframe
@@ -57,6 +64,11 @@ fxn (grab URLs):
 ```{r map function}
 mapping_function = function(url){
     
+  # these urls are just for testing purposes
+  #url = "https://www.webtoons.com/en/challenge/tested/heck-of-a-start/viewer?title_no=231173&episode_no=1"
+  
+  #url = "https://www.webtoons.com/en/challenge/tested/happy-new-year/viewer?title_no=231173&episode_no=37"
+  
   #navigate to URL
   remDr$navigate(url)
   
@@ -67,20 +79,13 @@ mapping_function = function(url){
   
   Sys.sleep(2)
   
-  remDr$refresh()
-  
-  Sys.sleep(2)
-  
   #navigate to page with other comments (if it exists)
   #this code may break if there are more than 2 comment pages
-  other_replies <- remDr$findElement(using = 'css',  value = "[class = 'u_cbox_next u_cbox_next_end']")
+  other_comments <- remDr$findElements(using = 'css',  value = "[data-log = 'RPC.pglast']")
   
-  Sys.sleep(1)
-  
-  while (other_replies$isElementDisplayed()[[1]]) {
-    #print("Logo is visible")
-    
-    other_replies$clickElement()
+  while (length(other_comments) != 0) {
+
+    other_comments[[1]]$clickElement()
     
     Sys.sleep(2)
     
@@ -89,9 +94,9 @@ mapping_function = function(url){
     
     df = bind_rows(df, df2)
     
-    #remDr$refresh()
-    
-    other_replies <- remDr$findElement(using = 'css',  value = "[class = 'u_cbox_next u_cbox_next_end']")
+    df = df %>% distinct(comment_txt, .keep_all = TRUE)
+
+    other_comments <- remDr$findElements(using = 'css',  value = "[data-log = 'RPC.pglast']")
   } 
   
   #output the final df
@@ -112,16 +117,69 @@ scrape_comments = function(){
     Sys.sleep(1)
   }
 
-  #parse comments 
-  doc <- read_html(remDr$getPageSource()[[1]])
+  #parse comments
+  df_firstrepls = parse_comments(remDr$getPageSource()[[1]])
+  
+  #if there are more replies, click and scrape (need to figure out how to scrape only what is new)
+  other_replies <- remDr$findElements(using = 'css',  value = "[data-log = 'RPC.rlast']")
+  
+  len = length(other_replies)
+  
+  while (len != 0) {
+    for (j in 1:len) {
+      other_replies[[j]]$sendKeysToElement(list("laptops",key = "enter"))
+      Sys.sleep(1)
+    }
+    len = 0
+  }
+  
+  Sys.sleep(2)
+  
+  df_morerepls = parse_comments(remDr$getPageSource()[[1]])
+    
+  df = bind_rows(df_firstrepls, df_morerepls)
+  
+  df = df %>% distinct(comment_txt, .keep_all = TRUE)
+  
+  #output final df
+  df
 
-  replies_text = doc %>%
+}
+```
+
+```{r parse function}
+parse_comments = function(pagesrc){
+  
+  doc <- read_html(pagesrc)
+
+  episode = doc %>%
+    html_nodes(".subj_episode") %>%
+    html_text()
+  
+  comment_txt = doc %>%
     html_nodes(".u_cbox_contents") %>%
     html_text()
-
+  
+  username = doc %>%
+    html_nodes(".u_cbox_nick") %>%
+    html_text()
+  
+  likes = doc %>%
+    html_nodes(".u_cbox_cnt_recomm") %>%
+    html_text()
+  
+  reply <- doc %>% 
+    html_nodes(xpath = "//li[starts-with(@class,'u_cbox_comment')]") %>% 
+    html_attrs() %>%             
+    # Extract the second element
+    map(2) %>%  
+    unlist() %>% 
+    str_replace_all(",", " ") %>% 
+    str_detect("replyLevel:2") 
+  
   #add to dataframe
-  data_frame(replies_text)
-
+  data_frame(episode, comment_txt, username, likes, reply)
+  
 }
 ```
 
@@ -185,8 +243,6 @@ grab_urls = function(first_url, home_page){
 ```
 
 ```{r putting it all together}
-#remDr$refresh()
-
 first_url = "https://www.webtoons.com/en/challenge/tested/heck-of-a-start/viewer?title_no=231173&episode_no=1"
 
 home_page = "https://www.webtoons.com/en/challenge/tested/list?title_no=231173"
@@ -197,6 +253,11 @@ urls_list = grab_urls(first_url, home_page)
 #scrape comments from every episode
 comment_df = map_df(urls_list, mapping_function)
 
+#write to a txt file
+write.table(comment_df, file = "comments.txt", sep = ",", quote = TRUE, row.names = F)
+
+#write to a csv
+write.csv(comment_df,'comments.csv')
 ```
 
 ```{r stop server}
@@ -204,6 +265,71 @@ remDr$close()
 driver$server$stop()
 driver$server$process
 ```
+
+```{r analysis}
+webtoons_data = read_csv(file = "./data/comments.csv")
+
+webtoons_data = webtoons_data %>% 
+  select(-X1)
+
+#number of comments per each episode
+num_eps = webtoons_data %>%
+  count(episode) %>% 
+  arrange(desc(n))
+
+#outputting table of top 10 episodes by number of comments
+num_eps %>% 
+  top_n(10) %>% 
+  rename(number_of_comments = n) %>% 
+  knitr::kable(digits = 3)
+
+#arranging comments by likes
+arrange_by_likes = webtoons_data %>%
+  arrange(desc(likes)) 
+
+#outputting table of top 10 comments by number of likes
+head(arrange(webtoons_data, desc(likes)), 10) %>% 
+  knitr::kable(digits = 3)
+
+#number of comments each unique user has posted
+num_users = webtoons_data %>%
+  count(username) %>% 
+  arrange(desc(n)) %>% 
+  rename(number_of_comments = n)
+
+#stats of comments across all episodes
+avg_num_comm = num_eps %>%
+  summarize(mean_comments_per_ep = mean(number_of_comments),
+            median_comments_per_ep = median(number_of_comments),
+            sd_comments = sd(number_of_comments)) %>% 
+  knitr::kable(digits = 3)
+
+#stats of commentators
+avg_user = num_users %>%
+  summarize(mean_comments_per_user = mean(number_of_comments),
+            median_comments_per_user = median(number_of_comments),
+            sd_comments = sd(number_of_comments)) %>% 
+  knitr::kable(digits = 3)
+
+#stats of likes
+avg_likes = webtoons_data %>%
+  summarize(mean_likes_per_comment = mean(likes),
+            median_likes_per_comment = median(likes),
+            sd_likes = sd(likes)) %>% 
+  knitr::kable(digits = 3)
+
+#visualizations
+
+#distribution of likes
+ggplot(webtoons_data, aes(x = likes)) + 
+  geom_histogram() + 
+  labs(
+    title = "Distribution of likes per comment",
+    x = "Number of likes",
+    y = "Count"
+  )
+```
+
   
   
 
