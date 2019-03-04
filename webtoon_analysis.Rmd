@@ -1,0 +1,123 @@
+---
+title: "Webtoon Analysis"
+author: "Bryce Wong"
+date: "March 4, 2019"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rvest)
+library(stringr)
+library(tidyverse)
+library(purrr)
+```
+
+## Exploratory analysis of the Webtoon Comment data
+
+First reading in the data:
+
+```{r reading in data}
+webtoons_data = read_csv(file = "./data/comments.csv")
+
+webtoons_data = webtoons_data %>% 
+  select(-X1)
+```
+
+Now getting the number of comments per each episode:
+
+* Outputting table of top 10 episodes by number of comments
+
+```{r}
+#number of comments per each episode
+num_eps = webtoons_data %>%
+  count(episode) %>% 
+  arrange(desc(n))
+
+#outputting table of top 10 episodes by number of comments
+num_eps %>% 
+  top_n(10) %>% 
+  rename(number_of_comments = n) %>% 
+  knitr::kable(digits = 3)
+```
+
+Now getting the number of likes per each comment:
+
+* Outputting table of top 10 comments by number of likes
+
+```{r}
+#arranging comments by likes
+arrange_by_likes = webtoons_data %>%
+  arrange(desc(likes)) 
+
+#outputting table of top 10 comments by number of likes
+head(arrange(webtoons_data, desc(likes)), 10) %>% 
+  knitr::kable(digits = 3)
+```
+
+Now getting the number of comments per each unique user:
+
+* Outputting table of top 10 users by number of comments
+
+```{r}
+#number of comments each unique user has posted
+num_users = webtoons_data %>%
+  count(username) %>% 
+  arrange(desc(n)) 
+
+#outputting table of top 10 users by number of comments
+num_users %>% 
+  top_n(10) %>% 
+  rename(number_of_comments = n) %>% 
+  knitr::kable(digits = 3)
+```
+  
+Now a bunch of tables showing basic summary statistics for:
+
+* comments across all episodes
+* comments across all users
+* likes across all comments
+
+Also, one histogram at the end to show the distribution of likes.
+
+(The histogram of the distribution of number of comments per episode was a bit funky and probably not worth viewing)
+
+```{r}
+#stats of comments across all episodes
+avg_num_comm = num_eps %>%
+  summarize(mean_comments_per_ep = mean(n),
+            median_comments_per_ep = median(n),
+            sd_comments = sd(n)) %>% 
+  knitr::kable(digits = 3)
+
+avg_num_comm
+
+#stats of commentators
+avg_user = num_users %>%
+  summarize(mean_comments_per_user = mean(n),
+            median_comments_per_user = median(n),
+            sd_comments = sd(n)) %>% 
+  knitr::kable(digits = 3)
+
+avg_user
+
+#stats of likes
+avg_likes = webtoons_data %>%
+  summarize(mean_likes_per_comment = mean(likes),
+            median_likes_per_comment = median(likes),
+            sd_likes = sd(likes)) %>% 
+  knitr::kable(digits = 3)
+
+avg_likes
+
+#visualizations
+
+#distribution of likes
+ggplot(webtoons_data, aes(x = likes)) + 
+  geom_histogram() + 
+  labs(
+    title = "Distribution of likes per comment",
+    x = "Number of likes",
+    y = "Count"
+  )
+```
