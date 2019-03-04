@@ -3,8 +3,7 @@ Webtoon Analysis
 Bryce Wong
 March 4, 2019
 
-Exploratory analysis of the Webtoon Comment data
-------------------------------------------------
+### Exploratory analysis of the Webtoon Comment data
 
 First reading in the data:
 
@@ -191,3 +190,81 @@ ggplot(webtoons_data, aes(x = likes)) +
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
 ![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-4-1.png)
+
+### Sentiment analysis
+
+Note: a lot of the code here is adapted from Jeff Goldsmith's TidyText [lecture](%22http://p8105.com/tidy_text.html%22).
+
+``` r
+webtoon_comments = 
+  webtoons_data %>%
+  mutate(comment_num = row_number(),
+         like_category = cut(likes, breaks = c(-Inf, 4, 10, Inf),
+                      labels = c("low","middle","high"))) %>% 
+  as_tibble() 
+
+data(stop_words)
+
+comment_words = 
+  webtoon_comments %>% 
+  unnest_tokens(word, comment_txt) %>% 
+  anti_join(stop_words)
+```
+
+    ## Joining, by = "word"
+
+``` r
+comment_word_sentiments <- comment_words %>% 
+  inner_join(get_sentiments("bing")) %>% 
+  count(comment_num, sentiment) %>% 
+  spread(sentiment, n, fill = 0) %>% 
+  mutate(sentiment = positive - negative) %>% 
+  left_join(webtoon_comments)
+```
+
+    ## Joining, by = "word"
+
+    ## Joining, by = "comment_num"
+
+``` r
+ggplot(comment_word_sentiments, 
+       aes(x = reorder(comment_num, -sentiment), 
+           y = sentiment, fill = like_category, color = like_category)) + 
+  geom_bar(stat = "identity") + 
+  theme(axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank()) 
+```
+
+![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-5-1.png)
+
+Most positive review:
+
+``` r
+comment_word_sentiments %>%
+  filter(sentiment == max(sentiment)) %>% 
+  pull(comment_txt)
+```
+
+    ## [1] "Thank you so much notgaybutnot straight thank you for listening so wish I can say everything else had a happy ending but it<U+0092>s okay because people like you make this life thing so much easier esp with the love and support happy New Years to you and yours may god bless you in a bundance<U+2728>"
+
+Most negative review:
+
+``` r
+comment_word_sentiments %>%
+  filter(sentiment == min(sentiment)) %>% 
+  pull(comment_txt)
+```
+
+    ## [1] "When I say all of us I mean yes I was an addict and still am I have an addictive personality thingy, (so I<U+0092>m not living in active addiction anymore) i wish I could like sacrifice myself for all the addicts hurting abused children, & the animals ever poor baby that<U+0092>s getting abused or is sad or anything but sadly I<U+0092>m nobody and I can<U+0092>t change any of it but maybe if I think like this maybe I<U+0092>m not the only one and maybe all of us who feel this way can get together and maybe help all those who are"
+
+Interestingly, cannot find the text for the comment with the lowest/highest sentiment in a specific like\_category - something to look into in the future.
+
+Exporting a text file of the comments:
+
+``` r
+just_comments = webtoons_data %>% 
+  select(comment_txt)
+
+write.table(just_comments, file = "just_comments.txt", sep = ",", quote = TRUE, row.names = F)
+```

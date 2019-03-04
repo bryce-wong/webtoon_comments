@@ -18,7 +18,7 @@ library(RSelenium)
 
 Some things to note: 
 
-*Will be following ethical principles as outlined [here]("https://towardsdatascience.com/ethics-in-web-scraping-b96b18136f01"").
+*Will be following ethical principles as outlined [here]("https://towardsdatascience.com/ethics-in-web-scraping-b96b18136f01").
 
 *Finally, I have looked at Webtoon's robots.txt and it looks like I should be able to scrape comments.
 

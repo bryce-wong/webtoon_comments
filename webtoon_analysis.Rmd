@@ -11,9 +11,11 @@ library(rvest)
 library(stringr)
 library(tidyverse)
 library(purrr)
+library(tidytext)
+library(viridis)
 ```
 
-## Exploratory analysis of the Webtoon Comment data
+### Exploratory analysis of the Webtoon Comment data
 
 First reading in the data:
 
@@ -121,3 +123,66 @@ ggplot(webtoons_data, aes(x = likes)) +
     y = "Count"
   )
 ```
+
+### Sentiment analysis
+
+Note: a lot of the code here is adapted from Jeff Goldsmith's TidyText [lecture]("http://p8105.com/tidy_text.html").
+
+```{r}
+webtoon_comments = 
+  webtoons_data %>%
+  mutate(comment_num = row_number(),
+         like_category = cut(likes, breaks = c(-Inf, 4, 10, Inf),
+                      labels = c("low","middle","high"))) %>% 
+  as_tibble() 
+
+data(stop_words)
+
+comment_words = 
+  webtoon_comments %>% 
+  unnest_tokens(word, comment_txt) %>% 
+  anti_join(stop_words)
+
+comment_word_sentiments <- comment_words %>% 
+  inner_join(get_sentiments("bing")) %>% 
+  count(comment_num, sentiment) %>% 
+  spread(sentiment, n, fill = 0) %>% 
+  mutate(sentiment = positive - negative) %>% 
+  left_join(webtoon_comments)
+
+ggplot(comment_word_sentiments, 
+       aes(x = reorder(comment_num, -sentiment), 
+           y = sentiment, fill = like_category, color = like_category)) + 
+  geom_bar(stat = "identity") + 
+  theme(axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank()) 
+```
+
+Most positive review:
+
+```{r}
+comment_word_sentiments %>%
+  filter(sentiment == max(sentiment)) %>% 
+  pull(comment_txt)
+```
+
+Most negative review:
+
+```{r}
+comment_word_sentiments %>%
+  filter(sentiment == min(sentiment)) %>% 
+  pull(comment_txt)
+```
+
+Interestingly, cannot find the text for the comment with the lowest/highest sentiment in a specific like_category - something to look into in the future.
+
+Exporting a text file of the comments:
+
+```{r}
+just_comments = webtoons_data %>% 
+  select(comment_txt)
+
+write.table(just_comments, file = "just_comments.txt", sep = ",", quote = TRUE, row.names = F)
+```
+
