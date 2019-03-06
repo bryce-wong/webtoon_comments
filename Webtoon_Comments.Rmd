@@ -28,7 +28,7 @@ Reading in comments from the first episode:
 
 Make sure you've already downloaded JAVA.
 
-```{r starting server, eval=FALSE}
+```{r starting server}
 driver = rsDriver(browser = c("chrome"))
 remDr = driver[["client"]]
 ```
@@ -242,7 +242,7 @@ grab_urls = function(first_url, home_page){
 
 ```
 
-```{r putting it all together, eval=FALSE}
+```{r putting it all together}
 first_url = "https://www.webtoons.com/en/challenge/tested/heck-of-a-start/viewer?title_no=231173&episode_no=1"
 
 home_page = "https://www.webtoons.com/en/challenge/tested/list?title_no=231173"
@@ -260,7 +260,7 @@ write.table(comment_df, file = "comments.txt", sep = ",", quote = TRUE, row.name
 write.csv(comment_df,'comments.csv')
 ```
 
-```{r stop server, eval=FALSE}
+```{r stop server}
 remDr$close()
 driver$server$stop()
 driver$server$process
