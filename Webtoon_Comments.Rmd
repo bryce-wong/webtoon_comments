@@ -18,9 +18,9 @@ library(RSelenium)
 
 Some things to note: 
 
-*Will be following ethical principles as outlined [here]("https://towardsdatascience.com/ethics-in-web-scraping-b96b18136f01").
+* Will be following ethical principles as outlined [here]("https://towardsdatascience.com/ethics-in-web-scraping-b96b18136f01").
 
-*Finally, I have looked at Webtoon's robots.txt and it looks like I should be able to scrape comments.
+* Finally, I have looked at Webtoon's robots.txt and it looks like I should be able to scrape comments.
 
 ###Using R Selenium to scrape Line WEBTOON comments
 
@@ -28,38 +28,46 @@ Reading in comments from the first episode:
 
 Make sure you've already downloaded JAVA.
 
-```{r starting server}
+```{r starting server, eval=FALSE}
 driver = rsDriver(browser = c("chrome"))
 remDr = driver[["client"]]
 ```
 
-Overview of the process:
+### Overview of the process:
+
 1. grab all URLs
 2. map fxn onto URLS [comment_df = map_df(listofURLs, fxn)]
 
 fxn (mapping):
-- read URL
-- scrape (another fxn)
-- search for 2nd page of comments
-  - if 2nd page exists, scrape (same as above fxn)
+
+* read URL
+* scrape (another fxn)
+* search for 2nd page of comments
+    
+    * if 2nd page exists, scrape (same as above fxn)
   
 fxn (scrape):
-- find all reply buttons
-- open all reply buttons
-- parse fxn
-- find "more replies" button and open all
-- parse fxn + bind rows
-- delete duplicants
-- output data frame
+
+* find all reply buttons
+* open all reply buttons
+* parse fxn
+* find "more replies" button and open all
+* parse fxn + bind rows
+* delete duplicants
+* output data frame
 
 fxn (parse):
-- extract episode, comment, username, likes, reply or not
-- output data frame 
+
+* extract episode, comment, username, likes, reply or not
+* output data frame 
 
 fxn (grab URLs):
-- open first URL, save to dataframe
-- navigate to next page, save to dataframe
-- continue until no more "next pages"
+
+* open first URL, save to dataframe
+* navigate to next page, save to dataframe
+* continue until no more "next pages"
+
+### Map function: 
 
 ```{r map function}
 mapping_function = function(url){
@@ -105,6 +113,8 @@ mapping_function = function(url){
 
 ```
 
+### Scraping function
+
 ```{r scraping function}
 scrape_comments = function(){
   
@@ -147,6 +157,8 @@ scrape_comments = function(){
 }
 ```
 
+### Parse function
+
 ```{r parse function}
 parse_comments = function(pagesrc){
   
@@ -182,6 +194,8 @@ parse_comments = function(pagesrc){
   
 }
 ```
+
+### Grabbing URLs function
 
 ```{r grabbing URLs function}
 grab_urls = function(first_url, home_page){
@@ -241,8 +255,9 @@ grab_urls = function(first_url, home_page){
 }
 
 ```
+### Putting it all together
 
-```{r putting it all together}
+```{r putting it all together, eval=FALSE}
 first_url = "https://www.webtoons.com/en/challenge/tested/heck-of-a-start/viewer?title_no=231173&episode_no=1"
 
 home_page = "https://www.webtoons.com/en/challenge/tested/list?title_no=231173"
@@ -260,7 +275,8 @@ write.table(comment_df, file = "comments.txt", sep = ",", quote = TRUE, row.name
 write.csv(comment_df,'comments.csv')
 ```
 
-```{r stop server}
+### Closing webdriver
+```{r stop server, eval=FALSE}
 remDr$close()
 driver$server$stop()
 driver$server$process

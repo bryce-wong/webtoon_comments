@@ -1,67 +1,64 @@
----
-title: "Webtoon Comments"
-author: "Bryce Wong"
-date: "January 29, 2019"
-output: github_document
----
+Webtoon Comments
+================
+Bryce Wong
+January 29, 2019
 
-```{r setup, include=FALSE}
-library(rvest)
-library(stringr)
-library(tidyverse)
-library(purrr)
-library(XML)
-library(RSelenium)
-```
+### Webscraping Webtoon comments
 
-### Webscraping Webtoon comments 
+Some things to note:
 
-Some things to note: 
+-   Will be following ethical principles as outlined [here](%22https://towardsdatascience.com/ethics-in-web-scraping-b96b18136f01%22).
 
-*Will be following ethical principles as outlined [here]("https://towardsdatascience.com/ethics-in-web-scraping-b96b18136f01").
+-   Finally, I have looked at Webtoon's robots.txt and it looks like I should be able to scrape comments.
 
-*Finally, I have looked at Webtoon's robots.txt and it looks like I should be able to scrape comments.
-
-###Using R Selenium to scrape Line WEBTOON comments
+### Using R Selenium to scrape Line WEBTOON comments
 
 Reading in comments from the first episode:
 
 Make sure you've already downloaded JAVA.
 
-```{r starting server, eval=FALSE}
+``` r
 driver = rsDriver(browser = c("chrome"))
 remDr = driver[["client"]]
 ```
 
-Overview of the process:
-1. grab all URLs
-2. map fxn onto URLS [comment_df = map_df(listofURLs, fxn)]
+### Overview of the process:
+
+1.  grab all URLs
+2.  map fxn onto URLS \[comment\_df = map\_df(listofURLs, fxn)\]
 
 fxn (mapping):
-- read URL
-- scrape (another fxn)
-- search for 2nd page of comments
-  - if 2nd page exists, scrape (same as above fxn)
-  
+
+-   read URL
+-   scrape (another fxn)
+-   search for 2nd page of comments
+
+    -   if 2nd page exists, scrape (same as above fxn)
+
 fxn (scrape):
-- find all reply buttons
-- open all reply buttons
-- parse fxn
-- find "more replies" button and open all
-- parse fxn + bind rows
-- delete duplicants
-- output data frame
+
+-   find all reply buttons
+-   open all reply buttons
+-   parse fxn
+-   find "more replies" button and open all
+-   parse fxn + bind rows
+-   delete duplicants
+-   output data frame
 
 fxn (parse):
-- extract episode, comment, username, likes, reply or not
-- output data frame 
+
+-   extract episode, comment, username, likes, reply or not
+-   output data frame
 
 fxn (grab URLs):
-- open first URL, save to dataframe
-- navigate to next page, save to dataframe
-- continue until no more "next pages"
 
-```{r map function}
+-   open first URL, save to dataframe
+-   navigate to next page, save to dataframe
+-   continue until no more "next pages"
+
+### Map function:
+
+``` r
 mapping_function = function(url){
     
   # these urls are just for testing purposes
@@ -102,10 +99,11 @@ mapping_function = function(url){
   #output the final df
   df
 }
-
 ```
 
-```{r scraping function}
+### Scraping function
+
+``` r
 scrape_comments = function(){
   
   #find all reply buttons
@@ -147,7 +145,9 @@ scrape_comments = function(){
 }
 ```
 
-```{r parse function}
+### Parse function
+
+``` r
 parse_comments = function(pagesrc){
   
   doc <- read_html(pagesrc)
@@ -183,7 +183,9 @@ parse_comments = function(pagesrc){
 }
 ```
 
-```{r grabbing URLs function}
+### Grabbing URLs function
+
+``` r
 grab_urls = function(first_url, home_page){
   
   #navigate to home page
@@ -239,10 +241,11 @@ grab_urls = function(first_url, home_page){
   list_of_urls
   
 }
-
 ```
 
-```{r putting it all together, eval=FALSE}
+### Putting it all together
+
+``` r
 first_url = "https://www.webtoons.com/en/challenge/tested/heck-of-a-start/viewer?title_no=231173&episode_no=1"
 
 home_page = "https://www.webtoons.com/en/challenge/tested/list?title_no=231173"
@@ -260,12 +263,10 @@ write.table(comment_df, file = "comments.txt", sep = ",", quote = TRUE, row.name
 write.csv(comment_df,'comments.csv')
 ```
 
-```{r stop server, eval=FALSE}
+### Closing webdriver
+
+``` r
 remDr$close()
 driver$server$stop()
 driver$server$process
 ```
-
-  
-  
-
