@@ -238,7 +238,7 @@ ggplot(comment_word_sentiments,
 
 ![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-5-1.png)
 
-Most positive review:
+Most positive comment:
 
 ``` r
 comment_word_sentiments %>%
@@ -248,7 +248,7 @@ comment_word_sentiments %>%
 
     ## [1] "Thank you so much notgaybutnot straight thank you for listening so wish I can say everything else had a happy ending but it<U+0092>s okay because people like you make this life thing so much easier esp with the love and support happy New Years to you and yours may god bless you in a bundance<U+2728>"
 
-Most negative review:
+Most negative comment:
 
 ``` r
 comment_word_sentiments %>%
@@ -263,7 +263,8 @@ Interestingly, cannot find the text for the comment with the lowest/highest sent
 Exporting a text file of the comments:
 
 ``` r
-just_comments = webtoons_data %>% 
+just_comments = webtoons_data %>%
+  filter(username != "TESTED @YGetIt on IG") %>% 
   select(comment_txt)
 
 write.table(just_comments, file = "just_comments.txt", sep = ",", quote = TRUE, row.names = F)

@@ -159,7 +159,7 @@ ggplot(comment_word_sentiments,
         axis.ticks.x = element_blank()) 
 ```
 
-Most positive review:
+Most positive comment:
 
 ```{r}
 comment_word_sentiments %>%
@@ -167,7 +167,7 @@ comment_word_sentiments %>%
   pull(comment_txt)
 ```
 
-Most negative review:
+Most negative comment:
 
 ```{r}
 comment_word_sentiments %>%
@@ -180,7 +180,8 @@ Interestingly, cannot find the text for the comment with the lowest/highest sent
 Exporting a text file of the comments:
 
 ```{r}
-just_comments = webtoons_data %>% 
+just_comments = webtoons_data %>%
+  filter(username != "TESTED @YGetIt on IG") %>% 
   select(comment_txt)
 
 write.table(just_comments, file = "just_comments.txt", sep = ",", quote = TRUE, row.names = F)
