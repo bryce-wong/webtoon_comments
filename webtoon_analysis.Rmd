@@ -23,6 +23,7 @@ First reading in the data:
 webtoons_data = read_csv(file = "./data/comments.csv")
 
 webtoons_data = webtoons_data %>% 
+  filter(username != "TESTED @YGetIt on IG") %>% 
   select(-X1)
 ```
 
@@ -111,6 +112,27 @@ avg_likes = webtoons_data %>%
   knitr::kable(digits = 3)
 
 avg_likes
+
+#stats of total comment likes
+avg_total_likes = webtoons_data %>%
+  group_by(episode) %>% 
+  summarise(likes = sum(likes)) %>% 
+  summarize(mean_total_likes = mean(likes),
+            median_total_likes = median(likes),
+            sd_total_likes = sd(likes)) %>% 
+  knitr::kable(digits = 3)
+
+avg_total_likes
+
+#stats of likes per episode (likes of episode - NOT comments)
+avg_likes_per_ep = webtoons_data %>%
+  distinct(episode, .keep_all = TRUE) %>% 
+  summarize(mean_likes_per_ep = mean(likes_per_ep),
+            median_likes_per_comment = median(likes_per_ep),
+            sd_likes = sd(likes_per_ep)) %>% 
+  knitr::kable(digits = 3) 
+
+avg_likes_per_ep
 
 #visualizations
 

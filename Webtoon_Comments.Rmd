@@ -29,7 +29,8 @@ Reading in comments from the first episode:
 Make sure you've already downloaded JAVA.
 
 ```{r starting server, eval=FALSE}
-driver = rsDriver(browser = c("chrome"))
+#driver = rsDriver(browser = c("chrome"))
+driver <- rsDriver(browser=c("chrome"), chromever="73.0.3683.68")
 remDr = driver[["client"]]
 ```
 
@@ -180,6 +181,10 @@ parse_comments = function(pagesrc){
     html_nodes(".u_cbox_cnt_recomm") %>%
     html_text()
   
+  likes_per_ep = doc %>%
+    html_nodes("._likeCount") %>%
+    html_text()
+  
   reply <- doc %>% 
     html_nodes(xpath = "//li[starts-with(@class,'u_cbox_comment')]") %>% 
     html_attrs() %>%             
@@ -190,7 +195,7 @@ parse_comments = function(pagesrc){
     str_detect("replyLevel:2") 
   
   #add to dataframe
-  data_frame(episode, comment_txt, username, likes, reply)
+  data_frame(episode, comment_txt, username, likes, reply, likes_per_ep)
   
 }
 ```
