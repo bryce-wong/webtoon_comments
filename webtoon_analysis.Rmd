@@ -69,10 +69,10 @@ num_users = webtoons_data %>%
   arrange(desc(n)) 
 
 #outputting table of top 10 users by number of comments
+#cannot output as a nice table, possibly because a user has UTF8 characters in their name
 num_users %>% 
   top_n(10) %>% 
-  rename(number_of_comments = n) %>% 
-  knitr::kable(digits = 3)
+  rename(number_of_comments = n) 
 ```
   
 Now a bunch of tables showing basic summary statistics for:

@@ -20,11 +20,13 @@ webtoons_data = read_csv(file = "./data/comments.csv")
     ##   comment_txt = col_character(),
     ##   username = col_character(),
     ##   likes = col_integer(),
-    ##   reply = col_logical()
+    ##   reply = col_logical(),
+    ##   likes_per_ep = col_integer()
     ## )
 
 ``` r
 webtoons_data = webtoons_data %>% 
+  filter(username != "TESTED @YGetIt on IG") %>% 
   select(-X1)
 ```
 
@@ -47,18 +49,18 @@ num_eps %>%
 
     ## Selecting by n
 
-| episode                    |  number\_of\_comments|
-|:---------------------------|---------------------:|
-| WORLD AIDS DAY!!!          |                    29|
-| Heck of a Start            |                    25|
-| Brunchy Brunch             |                    22|
-| HAPPY NEW YEAR!!!!!        |                    19|
-| Sometimes People SUCK!!!   |                    18|
-| FIGHT!!!!                  |                    17|
-| Prayers                    |                    16|
-| This Could Be Bad          |                    16|
-| Doctor Visit               |                    15|
-| Solution or More Problems? |                    15|
+| episode                  |  number\_of\_comments|
+|:-------------------------|---------------------:|
+| WORLD AIDS DAY!!!        |                    26|
+| Heck of a Start          |                    25|
+| Brunchy Brunch           |                    21|
+| Sometimes People SUCK!!! |                    18|
+| FIGHT!!!!                |                    17|
+| HAPPY NEW YEAR!!!!!      |                    17|
+| Prayers                  |                    16|
+| This Could Be Bad        |                    16|
+| Doctor Visit             |                    15|
+| Further South            |                    15|
 
 Now getting the number of likes per each comment:
 
@@ -74,18 +76,18 @@ head(arrange(webtoons_data, desc(likes)), 10) %>%
   knitr::kable(digits = 3)
 ```
 
-| episode                                   | comment\_txt                                                                                                                                       | username             |  likes| reply |
-|:------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------|:---------------------|------:|:------|
-| Heck of a Start                           | i love hamilton reference!                                                                                                                         | sub<U+270C>pewds     |    122| FALSE |
-| Heck of a Start                           | omg is that a-aron burr                                                                                                                            | saphirefan666        |     91| FALSE |
-| Heck of a Start                           | Hamilton :^))                                                                                                                                      | swirlixpuff          |     81| FALSE |
-| Solution or More Problems?                | I'm glad she was able to accept his help even if she can't forgive him. Please don't screw it up, dude. This is your last chance.                  | frowsy               |     56| FALSE |
-| This Could Be Bad                         | SHE HAD ONE DAMN JOB                                                                                                                               | GrimmZin             |     54| FALSE |
-| You Just Gonna Put My Business Out There? | Clearly tact and regard for patience privacy aren't a concern for this nurse. Fire her.                                                            | coyowolf TMT         |     52| FALSE |
-| Brunchy Brunch                            | wait what...... what kinda crazy person just goes: HEY LET'S RAISE OUR FRIEND'S BROTHER!! WHEEE!!                                                  | happycat(:           |     47| FALSE |
-| WORLD AIDS DAY!!!                         | honestly this is my new favorite comic it talks about real stuff in the world and i love it.                                                       | just your avrageweeb |     47| FALSE |
-| Brunchy Brunch                            | There will be no hood-rat code-switching to improper English at brunch, young lady. Sounds like my dad.                                            | gilleanfryingpan     |     42| FALSE |
-| WORLD AIDS DAY!!!                         | Thanks to Featured, I discovered this comic and I love it! Keep up the amazing work, author, and keep on being realistic with the topics! <U+2764> | Gabby Gonzalez       |     40| FALSE |
+| episode                                   | comment\_txt                                                                                                                                       | username             |  likes| reply |  likes\_per\_ep|
+|:------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------|:---------------------|------:|:------|---------------:|
+| Heck of a Start                           | i love hamilton reference!                                                                                                                         | sub<U+270C>pewds     |    122| FALSE |             523|
+| Heck of a Start                           | omg is that a-aron burr                                                                                                                            | saphirefan666        |     91| FALSE |             523|
+| Heck of a Start                           | Hamilton :^))                                                                                                                                      | swirlixpuff          |     81| FALSE |             523|
+| Solution or More Problems?                | I'm glad she was able to accept his help even if she can't forgive him. Please don't screw it up, dude. This is your last chance.                  | frowsy               |     57| FALSE |             204|
+| This Could Be Bad                         | SHE HAD ONE DAMN JOB                                                                                                                               | GrimmZin             |     55| FALSE |             235|
+| You Just Gonna Put My Business Out There? | Clearly tact and regard for patience privacy aren't a concern for this nurse. Fire her.                                                            | coyowolf TMT         |     53| FALSE |             238|
+| Brunchy Brunch                            | wait what...... what kinda crazy person just goes: HEY LET'S RAISE OUR FRIEND'S BROTHER!! WHEEE!!                                                  | happycat(:           |     49| FALSE |             296|
+| WORLD AIDS DAY!!!                         | honestly this is my new favorite comic it talks about real stuff in the world and i love it.                                                       | just your avrageweeb |     47| FALSE |             278|
+| Brunchy Brunch                            | There will be no hood-rat code-switching to improper English at brunch, young lady. Sounds like my dad.                                            | gilleanfryingpan     |     43| FALSE |             296|
+| WORLD AIDS DAY!!!                         | Thanks to Featured, I discovered this comic and I love it! Keep up the amazing work, author, and keep on being realistic with the topics! <U+2764> | Gabby Gonzalez       |     40| FALSE |             278|
 
 Now getting the number of comments per each unique user:
 
@@ -98,26 +100,28 @@ num_users = webtoons_data %>%
   arrange(desc(n)) 
 
 #outputting table of top 10 users by number of comments
+#cannot output as a nice table, possibly because a user has UTF8 characters in their name
 num_users %>% 
   top_n(10) %>% 
-  rename(number_of_comments = n) %>% 
-  knitr::kable(digits = 3)
+  rename(number_of_comments = n) 
 ```
 
     ## Selecting by n
 
-| username             |  number\_of\_comments|
-|:---------------------|---------------------:|
-| gilleanfryingpan     |                    45|
-| Kyle Majerczyk       |                    18|
-| happycat(:           |                    17|
-| 19danny15            |                    16|
-| AoiYeyi              |                    16|
-| Cheapthrill\_Xo      |                    15|
-| CopperMortar         |                    14|
-| catberra             |                    12|
-| TESTED @YGetIt on IG |                    12|
-| neftana23            |                    11|
+    ## # A tibble: 11 x 2
+    ##    username                   number_of_comments
+    ##    <chr>                                   <int>
+    ##  1 gilleanfryingpan                           45
+    ##  2 Kyle Majerczyk                             19
+    ##  3 happycat(:                                 18
+    ##  4 AoiYeyi                                    17
+    ##  5 19danny15                                  16
+    ##  6 Cheapthrill_Xo                             15
+    ##  7 CopperMortar                               14
+    ##  8 catberra                                   12
+    ##  9 neftana23                                  11
+    ## 10 "\xb0\x95Mariella\x95\xb0"                 10
+    ## 11 RedtheGreyFox                              10
 
 Now a bunch of tables showing basic summary statistics for:
 
@@ -142,7 +146,7 @@ avg_num_comm
 
 |  mean\_comments\_per\_ep|  median\_comments\_per\_ep|  sd\_comments|
 |------------------------:|--------------------------:|-------------:|
-|                   11.067|                         10|         5.569|
+|                   10.681|                         10|         5.247|
 
 ``` r
 #stats of commentators
@@ -157,7 +161,7 @@ avg_user
 
 |  mean\_comments\_per\_user|  median\_comments\_per\_user|  sd\_comments|
 |--------------------------:|----------------------------:|-------------:|
-|                      2.767|                            1|         4.586|
+|                      2.773|                            1|         4.621|
 
 ``` r
 #stats of likes
@@ -172,7 +176,40 @@ avg_likes
 
 |  mean\_likes\_per\_comment|  median\_likes\_per\_comment|  sd\_likes|
 |--------------------------:|----------------------------:|----------:|
-|                      6.827|                          3.5|     11.044|
+|                       6.96|                            4|     11.118|
+
+``` r
+#stats of total comment likes
+avg_total_likes = webtoons_data %>%
+  group_by(episode) %>% 
+  summarise(likes = sum(likes)) %>% 
+  summarize(mean_total_likes = mean(likes),
+            median_total_likes = median(likes),
+            sd_total_likes = sd(likes)) %>% 
+  knitr::kable(digits = 3)
+
+avg_total_likes
+```
+
+|  mean\_total\_likes|  median\_total\_likes|  sd\_total\_likes|
+|-------------------:|---------------------:|-----------------:|
+|               74.34|                    55|            65.455|
+
+``` r
+#stats of likes per episode (likes of episode - NOT comments)
+avg_likes_per_ep = webtoons_data %>%
+  distinct(episode, .keep_all = TRUE) %>% 
+  summarize(mean_likes_per_ep = mean(likes_per_ep),
+            median_likes_per_comment = median(likes_per_ep),
+            sd_likes = sd(likes_per_ep)) %>% 
+  knitr::kable(digits = 3) 
+
+avg_likes_per_ep
+```
+
+|  mean\_likes\_per\_ep|  median\_likes\_per\_comment|  sd\_likes|
+|---------------------:|----------------------------:|----------:|
+|               237.191|                          235|       69.8|
 
 ``` r
 #visualizations
