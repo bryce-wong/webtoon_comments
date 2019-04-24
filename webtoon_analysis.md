@@ -137,9 +137,8 @@ num_users %>%
 ep_likes = webtoons_data %>%
   distinct(episode, .keep_all = TRUE)
 
-#arranging episodes by episode likes
-arrange_by_ep_likes = ep_likes %>%
-  arrange(desc(likes_per_ep)) %>% 
+#removing other columns
+ep_likes = ep_likes %>% 
   select(episode, likes_per_ep)
 
 #outputting table of top 10 comments by number of likes
@@ -147,18 +146,18 @@ head(arrange(ep_likes, desc(likes_per_ep)), 10) %>%
   knitr::kable(digits = 3)
 ```
 
-| episode                      | comment\_txt                                                                                                                                                          | username             |  likes| reply |  likes\_per\_ep|
-|:-----------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------|:---------------------|------:|:------|---------------:|
-| Heck of a Start              | i love hamilton reference!                                                                                                                                            | sub<U+270C>pewds     |    124| FALSE |             537|
-| Uh oh                        | I'm confused... I don't understand the sequence huhu sorry                                                                                                            | Sheila27             |     13| FALSE |             434|
-| Flash Back                   | Uh,,,,, wHAT                                                                                                                                                          | Katalista            |      0| FALSE |             369|
-| Doctor Visit                 | What does that mean                                                                                                                                                   | Katalista            |      0| FALSE |             338|
-| Work It Out                  | was that... a doctor who reference? "not if I see you first" omg                                                                                                      | desila.s67           |      1| FALSE |             335|
-| Brunchy Brunch               | wait what...... what kinda crazy person just goes: HEY LET'S RAISE OUR FRIEND'S BROTHER!! WHEEE!!                                                                     | happycat(:           |     54| FALSE |             308|
-| WORLD AIDS DAY!!!            | honestly this is my new favorite comic it talks about real stuff in the world and i love it.                                                                          | just your avrageweeb |     48| FALSE |             288|
-| Rough Start                  | Damn, his mom and ex-foster parents suck ass                                                                                                                          | Lindsay Stevens      |      1| FALSE |             279|
-| It Goes Down in the Bathroom | Do these idiots WANT to spread aids???                                                                                                                                | Honin Akecheta       |     10| FALSE |             267|
-| Ape S\#$%                    | Terrence's brother is a little sh*t, but give the kid a break. He just found out his older brother has HIV and lied about it. I'd be breaking sh*t too if it were me. | Lindsay Stevens      |      3| FALSE |             262|
+| episode                      |  likes\_per\_ep|
+|:-----------------------------|---------------:|
+| Heck of a Start              |             537|
+| Uh oh                        |             434|
+| Flash Back                   |             369|
+| Doctor Visit                 |             338|
+| Work It Out                  |             335|
+| Brunchy Brunch               |             308|
+| WORLD AIDS DAY!!!            |             288|
+| Rough Start                  |             279|
+| It Goes Down in the Bathroom |             267|
+| Ape S\#$%                    |             262|
 
 Now a bunch of tables showing basic summary statistics for:
 
@@ -237,16 +236,16 @@ avg_total_likes
 avg_likes_per_ep = webtoons_data %>%
   distinct(episode, .keep_all = TRUE) %>% 
   summarize(mean_likes_per_ep = mean(likes_per_ep),
-            median_likes_per_comment = median(likes_per_ep),
+            median_likes_per_ep = median(likes_per_ep),
             sd_likes = sd(likes_per_ep)) %>% 
   knitr::kable(digits = 3) 
 
 avg_likes_per_ep
 ```
 
-|  mean\_likes\_per\_ep|  median\_likes\_per\_comment|  sd\_likes|
-|---------------------:|----------------------------:|----------:|
-|               237.904|                          244|     74.626|
+|  mean\_likes\_per\_ep|  median\_likes\_per\_ep|  sd\_likes|
+|---------------------:|-----------------------:|----------:|
+|               237.904|                     244|     74.626|
 
 ``` r
 #visualizations

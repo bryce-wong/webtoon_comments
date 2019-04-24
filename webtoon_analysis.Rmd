@@ -89,9 +89,8 @@ num_users %>%
 ep_likes = webtoons_data %>%
   distinct(episode, .keep_all = TRUE)
 
-#arranging episodes by episode likes
-arrange_by_ep_likes = ep_likes %>%
-  arrange(desc(likes_per_ep)) %>% 
+#removing other columns
+ep_likes = ep_likes %>% 
   select(episode, likes_per_ep)
 
 #outputting table of top 10 comments by number of likes
@@ -152,7 +151,7 @@ avg_total_likes
 avg_likes_per_ep = webtoons_data %>%
   distinct(episode, .keep_all = TRUE) %>% 
   summarize(mean_likes_per_ep = mean(likes_per_ep),
-            median_likes_per_comment = median(likes_per_ep),
+            median_likes_per_ep = median(likes_per_ep),
             sd_likes = sd(likes_per_ep)) %>% 
   knitr::kable(digits = 3) 
 
