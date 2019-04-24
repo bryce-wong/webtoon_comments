@@ -20,12 +20,19 @@ library(viridis)
 First reading in the data:
 
 ```{r reading in data}
-webtoons_data = read_csv(file = "./data/comments.csv")
+webtoons_data = read_csv(file = "./data/comments_april_24.csv")
 
 webtoons_data = webtoons_data %>% 
   filter(username != "TESTED @YGetIt on IG") %>% 
   select(-X1)
+
+number_of_eps = webtoons_data %>%
+  distinct(episode, .keep_all = TRUE)
 ```
+
+The total number of comments is `r dim(webtoons_data)[1]`.
+
+The total number of episodes is `r dim(number_of_eps)[1]`.
 
 Now getting the number of comments per each episode:
 
@@ -73,6 +80,23 @@ num_users = webtoons_data %>%
 num_users %>% 
   top_n(10) %>% 
   rename(number_of_comments = n) 
+```
+
+* Outputting table of top 10 episodes by number of episode likes
+
+```{r}
+#stats of likes per episode (likes of episode - NOT comments)
+ep_likes = webtoons_data %>%
+  distinct(episode, .keep_all = TRUE)
+
+#arranging episodes by episode likes
+arrange_by_ep_likes = ep_likes %>%
+  arrange(desc(likes_per_ep)) %>% 
+  select(episode, likes_per_ep)
+
+#outputting table of top 10 comments by number of likes
+head(arrange(ep_likes, desc(likes_per_ep)), 10) %>% 
+  knitr::kable(digits = 3)
 ```
   
 Now a bunch of tables showing basic summary statistics for:

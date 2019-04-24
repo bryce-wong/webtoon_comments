@@ -8,7 +8,7 @@ March 4, 2019
 First reading in the data:
 
 ``` r
-webtoons_data = read_csv(file = "./data/comments.csv")
+webtoons_data = read_csv(file = "./data/comments_april_24.csv")
 ```
 
     ## Warning: Missing column names filled in: 'X1' [1]
@@ -28,7 +28,14 @@ webtoons_data = read_csv(file = "./data/comments.csv")
 webtoons_data = webtoons_data %>% 
   filter(username != "TESTED @YGetIt on IG") %>% 
   select(-X1)
+
+number_of_eps = webtoons_data %>%
+  distinct(episode, .keep_all = TRUE)
 ```
+
+The total number of comments is 534.
+
+The total number of episodes is 52.
 
 Now getting the number of comments per each episode:
 
@@ -53,13 +60,13 @@ num_eps %>%
 |:-------------------------|---------------------:|
 | WORLD AIDS DAY!!!        |                    26|
 | Heck of a Start          |                    25|
-| Brunchy Brunch           |                    21|
+| Brunchy Brunch           |                    20|
 | Sometimes People SUCK!!! |                    18|
 | FIGHT!!!!                |                    17|
 | HAPPY NEW YEAR!!!!!      |                    17|
+| Doctor Visit             |                    16|
 | Prayers                  |                    16|
 | This Could Be Bad        |                    16|
-| Doctor Visit             |                    15|
 | Further South            |                    15|
 
 Now getting the number of likes per each comment:
@@ -78,16 +85,16 @@ head(arrange(webtoons_data, desc(likes)), 10) %>%
 
 | episode                                   | comment\_txt                                                                                                                                       | username             |  likes| reply |  likes\_per\_ep|
 |:------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------|:---------------------|------:|:------|---------------:|
-| Heck of a Start                           | i love hamilton reference!                                                                                                                         | sub<U+270C>pewds     |    122| FALSE |             523|
-| Heck of a Start                           | omg is that a-aron burr                                                                                                                            | saphirefan666        |     91| FALSE |             523|
-| Heck of a Start                           | Hamilton :^))                                                                                                                                      | swirlixpuff          |     81| FALSE |             523|
-| Solution or More Problems?                | I'm glad she was able to accept his help even if she can't forgive him. Please don't screw it up, dude. This is your last chance.                  | frowsy               |     57| FALSE |             204|
-| This Could Be Bad                         | SHE HAD ONE DAMN JOB                                                                                                                               | GrimmZin             |     55| FALSE |             235|
-| You Just Gonna Put My Business Out There? | Clearly tact and regard for patience privacy aren't a concern for this nurse. Fire her.                                                            | coyowolf TMT         |     53| FALSE |             238|
-| Brunchy Brunch                            | wait what...... what kinda crazy person just goes: HEY LET'S RAISE OUR FRIEND'S BROTHER!! WHEEE!!                                                  | happycat(:           |     49| FALSE |             296|
-| WORLD AIDS DAY!!!                         | honestly this is my new favorite comic it talks about real stuff in the world and i love it.                                                       | just your avrageweeb |     47| FALSE |             278|
-| Brunchy Brunch                            | There will be no hood-rat code-switching to improper English at brunch, young lady. Sounds like my dad.                                            | gilleanfryingpan     |     43| FALSE |             296|
-| WORLD AIDS DAY!!!                         | Thanks to Featured, I discovered this comic and I love it! Keep up the amazing work, author, and keep on being realistic with the topics! <U+2764> | Gabby Gonzalez       |     40| FALSE |             278|
+| Heck of a Start                           | i love hamilton reference!                                                                                                                         | sub<U+270C>pewds     |    124| FALSE |             537|
+| Heck of a Start                           | omg is that a-aron burr                                                                                                                            | saphirefan666        |     93| FALSE |             537|
+| Heck of a Start                           | Hamilton :^))                                                                                                                                      | swirlixpuff          |     82| FALSE |             537|
+| This Could Be Bad                         | SHE HAD ONE DAMN JOB                                                                                                                               | GrimmZin             |     60| FALSE |             246|
+| Solution or More Problems?                | I'm glad she was able to accept his help even if she can't forgive him. Please don't screw it up, dude. This is your last chance.                  | frowsy               |     59| FALSE |             215|
+| You Just Gonna Put My Business Out There? | Clearly tact and regard for patience privacy aren't a concern for this nurse. Fire her.                                                            | coyowolf TMT         |     55| FALSE |             247|
+| Brunchy Brunch                            | wait what...... what kinda crazy person just goes: HEY LET'S RAISE OUR FRIEND'S BROTHER!! WHEEE!!                                                  | happycat(:           |     54| FALSE |             308|
+| WORLD AIDS DAY!!!                         | honestly this is my new favorite comic it talks about real stuff in the world and i love it.                                                       | just your avrageweeb |     48| FALSE |             288|
+| Brunchy Brunch                            | There will be no hood-rat code-switching to improper English at brunch, young lady. Sounds like my dad.                                            | gilleanfryingpan     |     47| FALSE |             308|
+| WORLD AIDS DAY!!!                         | Thanks to Featured, I discovered this comic and I love it! Keep up the amazing work, author, and keep on being realistic with the topics! <U+2764> | Gabby Gonzalez       |     42| FALSE |             288|
 
 Now getting the number of comments per each unique user:
 
@@ -112,16 +119,46 @@ num_users %>%
     ##    username                   number_of_comments
     ##    <chr>                                   <int>
     ##  1 gilleanfryingpan                           45
-    ##  2 Kyle Majerczyk                             19
-    ##  3 happycat(:                                 18
-    ##  4 AoiYeyi                                    17
+    ##  2 AoiYeyi                                    21
+    ##  3 sausage172000                              21
+    ##  4 happycat(:                                 18
     ##  5 19danny15                                  16
     ##  6 Cheapthrill_Xo                             15
     ##  7 CopperMortar                               14
     ##  8 catberra                                   12
-    ##  9 neftana23                                  11
-    ## 10 "\xb0\x95Mariella\x95\xb0"                 10
-    ## 11 RedtheGreyFox                              10
+    ##  9 RedtheGreyFox                              12
+    ## 10 "\xb0\x95Mariella\x95\xb0"                 11
+    ## 11 neftana23                                  11
+
+-   Outputting table of top 10 episodes by number of episode likes
+
+``` r
+#stats of likes per episode (likes of episode - NOT comments)
+ep_likes = webtoons_data %>%
+  distinct(episode, .keep_all = TRUE)
+
+#arranging episodes by episode likes
+arrange_by_ep_likes = ep_likes %>%
+  arrange(desc(likes_per_ep)) %>% 
+  select(episode, likes_per_ep)
+
+#outputting table of top 10 comments by number of likes
+head(arrange(ep_likes, desc(likes_per_ep)), 10) %>% 
+  knitr::kable(digits = 3)
+```
+
+| episode                      | comment\_txt                                                                                                                                                          | username             |  likes| reply |  likes\_per\_ep|
+|:-----------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------|:---------------------|------:|:------|---------------:|
+| Heck of a Start              | i love hamilton reference!                                                                                                                                            | sub<U+270C>pewds     |    124| FALSE |             537|
+| Uh oh                        | I'm confused... I don't understand the sequence huhu sorry                                                                                                            | Sheila27             |     13| FALSE |             434|
+| Flash Back                   | Uh,,,,, wHAT                                                                                                                                                          | Katalista            |      0| FALSE |             369|
+| Doctor Visit                 | What does that mean                                                                                                                                                   | Katalista            |      0| FALSE |             338|
+| Work It Out                  | was that... a doctor who reference? "not if I see you first" omg                                                                                                      | desila.s67           |      1| FALSE |             335|
+| Brunchy Brunch               | wait what...... what kinda crazy person just goes: HEY LET'S RAISE OUR FRIEND'S BROTHER!! WHEEE!!                                                                     | happycat(:           |     54| FALSE |             308|
+| WORLD AIDS DAY!!!            | honestly this is my new favorite comic it talks about real stuff in the world and i love it.                                                                          | just your avrageweeb |     48| FALSE |             288|
+| Rough Start                  | Damn, his mom and ex-foster parents suck ass                                                                                                                          | Lindsay Stevens      |      1| FALSE |             279|
+| It Goes Down in the Bathroom | Do these idiots WANT to spread aids???                                                                                                                                | Honin Akecheta       |     10| FALSE |             267|
+| Ape S\#$%                    | Terrence's brother is a little sh*t, but give the kid a break. He just found out his older brother has HIV and lied about it. I'd be breaking sh*t too if it were me. | Lindsay Stevens      |      3| FALSE |             262|
 
 Now a bunch of tables showing basic summary statistics for:
 
@@ -146,7 +183,7 @@ avg_num_comm
 
 |  mean\_comments\_per\_ep|  median\_comments\_per\_ep|  sd\_comments|
 |------------------------:|--------------------------:|-------------:|
-|                   10.681|                         10|         5.247|
+|                   10.269|                        9.5|         5.318|
 
 ``` r
 #stats of commentators
@@ -161,7 +198,7 @@ avg_user
 
 |  mean\_comments\_per\_user|  median\_comments\_per\_user|  sd\_comments|
 |--------------------------:|----------------------------:|-------------:|
-|                      2.773|                            1|         4.621|
+|                      2.825|                            1|          4.69|
 
 ``` r
 #stats of likes
@@ -176,7 +213,7 @@ avg_likes
 
 |  mean\_likes\_per\_comment|  median\_likes\_per\_comment|  sd\_likes|
 |--------------------------:|----------------------------:|----------:|
-|                       6.96|                            4|     11.118|
+|                      7.285|                            4|     11.418|
 
 ``` r
 #stats of total comment likes
@@ -193,7 +230,7 @@ avg_total_likes
 
 |  mean\_total\_likes|  median\_total\_likes|  sd\_total\_likes|
 |-------------------:|---------------------:|-----------------:|
-|               74.34|                    55|            65.455|
+|              74.808|                  58.5|            65.581|
 
 ``` r
 #stats of likes per episode (likes of episode - NOT comments)
@@ -209,7 +246,7 @@ avg_likes_per_ep
 
 |  mean\_likes\_per\_ep|  median\_likes\_per\_comment|  sd\_likes|
 |---------------------:|----------------------------:|----------:|
-|               237.191|                          235|       69.8|
+|               237.904|                          244|     74.626|
 
 ``` r
 #visualizations
@@ -226,7 +263,7 @@ ggplot(webtoons_data, aes(x = likes)) +
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
-![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-4-1.png)
+![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-5-1.png)
 
 ### Sentiment analysis
 
@@ -273,7 +310,7 @@ ggplot(comment_word_sentiments,
         axis.ticks.x = element_blank()) 
 ```
 
-![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-5-1.png)
+![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-6-1.png)
 
 Most positive comment:
 

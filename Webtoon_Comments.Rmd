@@ -29,8 +29,8 @@ Reading in comments from the first episode:
 Make sure you've already downloaded JAVA.
 
 ```{r starting server, eval=FALSE}
-#driver = rsDriver(browser = c("chrome"))
-driver <- rsDriver(browser=c("chrome"), chromever="73.0.3683.68")
+driver = rsDriver(browser = c("chrome"))
+#driver <- rsDriver(browser=c("chrome"), chromever="73.0.3683.68")
 remDr = driver[["client"]]
 ```
 
@@ -274,10 +274,10 @@ urls_list = grab_urls(first_url, home_page)
 comment_df = map_df(urls_list, mapping_function)
 
 #write to a txt file
-write.table(comment_df, file = "comments.txt", sep = ",", quote = TRUE, row.names = F)
+write.table(comment_df, file = "comments_april_24.txt", sep = ",", quote = TRUE, row.names = F)
 
 #write to a csv
-write.csv(comment_df,'comments.csv')
+write.csv(comment_df,'comments_april_24.csv')
 ```
 
 ### Closing webdriver
