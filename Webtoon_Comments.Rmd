@@ -29,8 +29,8 @@ Reading in comments from the first episode:
 Make sure you've already downloaded JAVA.
 
 ```{r starting server, eval=FALSE}
-driver = rsDriver(browser = c("chrome"))
-#driver <- rsDriver(browser=c("chrome"), chromever="73.0.3683.68")
+#driver = rsDriver(browser = c("chrome"))
+driver <- rsDriver(browser=c("chrome"), chromever="72.0.3626.69")
 remDr = driver[["client"]]
 ```
 
@@ -165,6 +165,11 @@ parse_comments = function(pagesrc){
   
   doc <- read_html(pagesrc)
 
+  episode_num = doc %>%
+    html_nodes(xpath = "//span[starts-with(@class,'tx')]") %>% 
+    #html_nodes(".tx _btnOpenEpisodeList NPI=a:current,g:en_en") %>%
+    html_text()
+  
   episode = doc %>%
     html_nodes(".subj_episode") %>%
     html_text()
@@ -195,7 +200,7 @@ parse_comments = function(pagesrc){
     str_detect("replyLevel:2") 
   
   #add to dataframe
-  data_frame(episode, comment_txt, username, likes, reply, likes_per_ep)
+  data_frame(episode_num, episode, comment_txt, username, likes, reply, likes_per_ep)
   
 }
 ```
@@ -274,10 +279,10 @@ urls_list = grab_urls(first_url, home_page)
 comment_df = map_df(urls_list, mapping_function)
 
 #write to a txt file
-write.table(comment_df, file = "comments_april_24.txt", sep = ",", quote = TRUE, row.names = F)
+write.table(comment_df, file = "comments_may_10.txt", sep = ",", quote = TRUE, row.names = F)
 
 #write to a csv
-write.csv(comment_df,'comments_april_24.csv')
+write.csv(comment_df,'comments_may_10.csv')
 ```
 
 ### Closing webdriver

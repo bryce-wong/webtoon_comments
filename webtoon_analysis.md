@@ -1,14 +1,14 @@
 Webtoon Analysis
 ================
 Bryce Wong
-March 4, 2019
+May 10, 2019
 
 ### Exploratory analysis of the Webtoon Comment data
 
-First reading in the data:
+First reading in the data (updated as of April 24, 2019 - this was run BEFORE episode \#55 had been posted):
 
 ``` r
-webtoons_data = read_csv(file = "./data/comments_april_24.csv")
+webtoons_data = read_csv(file = "./data/comments_may_10.csv")
 ```
 
     ## Warning: Missing column names filled in: 'X1' [1]
@@ -16,6 +16,7 @@ webtoons_data = read_csv(file = "./data/comments_april_24.csv")
     ## Parsed with column specification:
     ## cols(
     ##   X1 = col_integer(),
+    ##   episode_num = col_character(),
     ##   episode = col_character(),
     ##   comment_txt = col_character(),
     ##   username = col_character(),
@@ -27,15 +28,22 @@ webtoons_data = read_csv(file = "./data/comments_april_24.csv")
 ``` r
 webtoons_data = webtoons_data %>% 
   filter(username != "TESTED @YGetIt on IG") %>% 
-  select(-X1)
+  select(-X1) %>% 
+  mutate(
+    episode_num = str_replace(episode_num, "#", ""),
+    episode_num = as.numeric(episode_num),
+    season = ifelse(episode_num %in% 1:12, "1",
+                    ifelse(episode_num %in% 13:24, "2",
+                           ifelse(episode_num %in% 25:50, "3", "4")))
+  )
 
 number_of_eps = webtoons_data %>%
   distinct(episode, .keep_all = TRUE)
 ```
 
-The total number of comments is 534.
+The total number of comments is 543.
 
-The total number of episodes is 52.
+The total number of episodes is 54.
 
 Now getting the number of comments per each episode:
 
@@ -59,7 +67,7 @@ num_eps %>%
 | episode                  |  number\_of\_comments|
 |:-------------------------|---------------------:|
 | WORLD AIDS DAY!!!        |                    26|
-| Heck of a Start          |                    25|
+| Heck of a Start          |                    24|
 | Brunchy Brunch           |                    20|
 | Sometimes People SUCK!!! |                    18|
 | FIGHT!!!!                |                    17|
@@ -71,7 +79,7 @@ num_eps %>%
 
 Now getting the number of likes per each comment:
 
--   Outputting table of top 10 comments by number of likes
+-   Outputting table of top 10 comments by number of likes (couldn't produce a pretty table)
 
 ``` r
 #arranging comments by likes
@@ -79,22 +87,22 @@ arrange_by_likes = webtoons_data %>%
   arrange(desc(likes)) 
 
 #outputting table of top 10 comments by number of likes
-head(arrange(webtoons_data, desc(likes)), 10) %>% 
-  knitr::kable(digits = 3)
+head(arrange(webtoons_data, desc(likes)), 10) 
 ```
 
-| episode                                   | comment\_txt                                                                                                                                       | username             |  likes| reply |  likes\_per\_ep|
-|:------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------|:---------------------|------:|:------|---------------:|
-| Heck of a Start                           | i love hamilton reference!                                                                                                                         | sub<U+270C>pewds     |    124| FALSE |             537|
-| Heck of a Start                           | omg is that a-aron burr                                                                                                                            | saphirefan666        |     93| FALSE |             537|
-| Heck of a Start                           | Hamilton :^))                                                                                                                                      | swirlixpuff          |     82| FALSE |             537|
-| This Could Be Bad                         | SHE HAD ONE DAMN JOB                                                                                                                               | GrimmZin             |     60| FALSE |             246|
-| Solution or More Problems?                | I'm glad she was able to accept his help even if she can't forgive him. Please don't screw it up, dude. This is your last chance.                  | frowsy               |     59| FALSE |             215|
-| You Just Gonna Put My Business Out There? | Clearly tact and regard for patience privacy aren't a concern for this nurse. Fire her.                                                            | coyowolf TMT         |     55| FALSE |             247|
-| Brunchy Brunch                            | wait what...... what kinda crazy person just goes: HEY LET'S RAISE OUR FRIEND'S BROTHER!! WHEEE!!                                                  | happycat(:           |     54| FALSE |             308|
-| WORLD AIDS DAY!!!                         | honestly this is my new favorite comic it talks about real stuff in the world and i love it.                                                       | just your avrageweeb |     48| FALSE |             288|
-| Brunchy Brunch                            | There will be no hood-rat code-switching to improper English at brunch, young lady. Sounds like my dad.                                            | gilleanfryingpan     |     47| FALSE |             308|
-| WORLD AIDS DAY!!!                         | Thanks to Featured, I discovered this comic and I love it! Keep up the amazing work, author, and keep on being realistic with the topics! <U+2764> | Gabby Gonzalez       |     42| FALSE |             288|
+    ## # A tibble: 10 x 8
+    ##    episode_num episode comment_txt userna~ likes reply likes_per_ep season
+    ##          <dbl> <chr>   <chr>       <chr>   <int> <lgl>        <int> <chr> 
+    ##  1           1 Heck o~ i love ham~ sub<U+~   125 FALSE          540 1     
+    ##  2           1 Heck o~ omg is tha~ saphir~    93 FALSE          540 1     
+    ##  3           1 Heck o~ Hamilton :~ swirli~    82 FALSE          540 1     
+    ##  4          40 Soluti~ I'm glad s~ frowsy     65 FALSE          218 3     
+    ##  5          23 This C~ SHE HAD ON~ GrimmZ~    64 FALSE          246 2     
+    ##  6           6 Brunch~ wait what.~ happyc~    56 FALSE          308 1     
+    ##  7          30 You Ju~ Clearly ta~ coyowo~    56 FALSE          248 3     
+    ##  8          32 WORLD ~ honestly t~ just y~    50 FALSE          289 3     
+    ##  9           6 Brunch~ There will~ gillea~    49 FALSE          308 1     
+    ## 10          50 Tragedy "This one ~ pompou~    49 FALSE          149 3
 
 Now getting the number of comments per each unique user:
 
@@ -115,20 +123,19 @@ num_users %>%
 
     ## Selecting by n
 
-    ## # A tibble: 11 x 2
+    ## # A tibble: 10 x 2
     ##    username                   number_of_comments
     ##    <chr>                                   <int>
     ##  1 gilleanfryingpan                           45
-    ##  2 AoiYeyi                                    21
-    ##  3 sausage172000                              21
+    ##  2 sausage172000                              22
+    ##  3 AoiYeyi                                    21
     ##  4 happycat(:                                 18
     ##  5 19danny15                                  16
-    ##  6 Cheapthrill_Xo                             15
+    ##  6 Cheapthrill_Xo                             16
     ##  7 CopperMortar                               14
-    ##  8 catberra                                   12
-    ##  9 RedtheGreyFox                              12
-    ## 10 "\xb0\x95Mariella\x95\xb0"                 11
-    ## 11 neftana23                                  11
+    ##  8 "\xb0\x95Mariella\x95\xb0"                 12
+    ##  9 catberra                                   12
+    ## 10 RedtheGreyFox                              12
 
 -   Outputting table of top 10 episodes by number of episode likes
 
@@ -148,13 +155,13 @@ head(arrange(ep_likes, desc(likes_per_ep)), 10) %>%
 
 | episode                      |  likes\_per\_ep|
 |:-----------------------------|---------------:|
-| Heck of a Start              |             537|
-| Uh oh                        |             434|
-| Flash Back                   |             369|
+| Heck of a Start              |             540|
+| Uh oh                        |             435|
+| Flash Back                   |             370|
 | Doctor Visit                 |             338|
 | Work It Out                  |             335|
 | Brunchy Brunch               |             308|
-| WORLD AIDS DAY!!!            |             288|
+| WORLD AIDS DAY!!!            |             289|
 | Rough Start                  |             279|
 | It Goes Down in the Bathroom |             267|
 | Ape S\#$%                    |             262|
@@ -182,7 +189,7 @@ avg_num_comm
 
 |  mean\_comments\_per\_ep|  median\_comments\_per\_ep|  sd\_comments|
 |------------------------:|--------------------------:|-------------:|
-|                   10.269|                        9.5|         5.318|
+|                   10.056|                          9|         5.272|
 
 ``` r
 #stats of commentators
@@ -197,7 +204,7 @@ avg_user
 
 |  mean\_comments\_per\_user|  median\_comments\_per\_user|  sd\_comments|
 |--------------------------:|----------------------------:|-------------:|
-|                      2.825|                            1|          4.69|
+|                      2.828|                            1|         4.705|
 
 ``` r
 #stats of likes
@@ -212,7 +219,7 @@ avg_likes
 
 |  mean\_likes\_per\_comment|  median\_likes\_per\_comment|  sd\_likes|
 |--------------------------:|----------------------------:|----------:|
-|                      7.285|                            4|     11.418|
+|                      7.576|                            4|     11.791|
 
 ``` r
 #stats of total comment likes
@@ -229,7 +236,7 @@ avg_total_likes
 
 |  mean\_total\_likes|  median\_total\_likes|  sd\_total\_likes|
 |-------------------:|---------------------:|-----------------:|
-|              74.808|                  58.5|            65.581|
+|              76.185|                  58.5|            66.315|
 
 ``` r
 #stats of likes per episode (likes of episode - NOT comments)
@@ -245,7 +252,7 @@ avg_likes_per_ep
 
 |  mean\_likes\_per\_ep|  median\_likes\_per\_ep|  sd\_likes|
 |---------------------:|-----------------------:|----------:|
-|               237.904|                     244|     74.626|
+|               235.611|                   243.5|     75.424|
 
 ``` r
 #visualizations
@@ -263,6 +270,64 @@ ggplot(webtoons_data, aes(x = likes)) +
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
 ![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-5-1.png)
+
+### Descriptive Statistics By Season
+
+Creating a variable that organizes the episodes by season - note that this code will not be extendable to organizing future episodes by season (there is no "season" identification marker built into the way the episodes were uploaded to Webtoons).
+
+The assignment of an episode to a specific season had to be done by hand, by taking a look at the titles and figuring out which season they belong to.
+
+``` r
+seasons = webtoons_data %>% 
+  select(season, episode_num, episode, comment_txt, likes_per_ep)
+
+#total episode likes per season
+likes_per_season = seasons %>% 
+  distinct(episode_num, .keep_all = TRUE) %>% 
+  group_by(season) %>% 
+  summarize(total_likes = sum(likes_per_ep)) 
+
+likes_per_season %>% 
+  knitr::kable(digits = 3) 
+```
+
+| season |  total\_likes|
+|:-------|-------------:|
+| 1      |          3878|
+| 2      |          2955|
+| 3      |          5424|
+| 4      |           466|
+
+``` r
+#visualization
+ggplot(likes_per_season, aes(x = season, y = total_likes, fill = season)) + geom_bar(stat = 'identity')
+```
+
+![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-6-1.png)
+
+``` r
+#total comments per season
+comments_per_season = seasons %>% 
+  count(season) %>% 
+  rename(total_comments = n)
+
+comments_per_season %>% 
+  knitr::kable(digits = 3)
+```
+
+| season |  total\_comments|
+|:-------|----------------:|
+| 1      |              132|
+| 2      |              121|
+| 3      |              275|
+| 4      |               15|
+
+``` r
+#visualization
+ggplot(comments_per_season, aes(x = season, y = total_comments, fill = season)) + geom_bar(stat = 'identity')
+```
+
+![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-6-2.png)
 
 ### Sentiment analysis
 
@@ -309,7 +374,7 @@ ggplot(comment_word_sentiments,
         axis.ticks.x = element_blank()) 
 ```
 
-![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-6-1.png)
+![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-7-1.png)
 
 Most positive comment:
 

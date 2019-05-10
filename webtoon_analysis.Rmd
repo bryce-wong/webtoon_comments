@@ -1,7 +1,7 @@
 ---
 title: "Webtoon Analysis"
 author: "Bryce Wong"
-date: "March 4, 2019"
+date: "May 10, 2019"
 output: github_document
 ---
 
@@ -17,14 +17,21 @@ library(viridis)
 
 ### Exploratory analysis of the Webtoon Comment data
 
-First reading in the data:
+First reading in the data (updated as of April 24, 2019 - this was run BEFORE episode #55 had been posted):
 
 ```{r reading in data}
-webtoons_data = read_csv(file = "./data/comments_april_24.csv")
+webtoons_data = read_csv(file = "./data/comments_may_10.csv")
 
 webtoons_data = webtoons_data %>% 
   filter(username != "TESTED @YGetIt on IG") %>% 
-  select(-X1)
+  select(-X1) %>% 
+  mutate(
+    episode_num = str_replace(episode_num, "#", ""),
+    episode_num = as.numeric(episode_num),
+    season = ifelse(episode_num %in% 1:12, "1",
+                    ifelse(episode_num %in% 13:24, "2",
+                           ifelse(episode_num %in% 25:50, "3", "4")))
+  )
 
 number_of_eps = webtoons_data %>%
   distinct(episode, .keep_all = TRUE)
@@ -53,7 +60,7 @@ num_eps %>%
 
 Now getting the number of likes per each comment:
 
-* Outputting table of top 10 comments by number of likes
+* Outputting table of top 10 comments by number of likes (couldn't produce a pretty table)
 
 ```{r}
 #arranging comments by likes
@@ -61,8 +68,7 @@ arrange_by_likes = webtoons_data %>%
   arrange(desc(likes)) 
 
 #outputting table of top 10 comments by number of likes
-head(arrange(webtoons_data, desc(likes)), 10) %>% 
-  knitr::kable(digits = 3)
+head(arrange(webtoons_data, desc(likes)), 10) 
 ```
 
 Now getting the number of comments per each unique user:
@@ -168,6 +174,42 @@ ggplot(webtoons_data, aes(x = likes)) +
     y = "Count"
   )
 ```
+
+### Descriptive Statistics By Season
+
+Creating a variable that organizes the episodes by season - note that this code will not be extendable to organizing future episodes by season (there is no "season" identification marker built into the way the episodes were uploaded to Webtoons).
+
+The assignment of an episode to a specific season had to be done by hand, by taking a look at the titles and figuring out which season they belong to.
+
+```{r}
+seasons = webtoons_data %>% 
+  select(season, episode_num, episode, comment_txt, likes_per_ep)
+
+#total episode likes per season
+likes_per_season = seasons %>% 
+  distinct(episode_num, .keep_all = TRUE) %>% 
+  group_by(season) %>% 
+  summarize(total_likes = sum(likes_per_ep)) 
+
+likes_per_season %>% 
+  knitr::kable(digits = 3) 
+
+#visualization
+ggplot(likes_per_season, aes(x = season, y = total_likes, fill = season)) + geom_bar(stat = 'identity')
+
+#total comments per season
+comments_per_season = seasons %>% 
+  count(season) %>% 
+  rename(total_comments = n)
+
+comments_per_season %>% 
+  knitr::kable(digits = 3)
+
+#visualization
+ggplot(comments_per_season, aes(x = season, y = total_comments, fill = season)) + geom_bar(stat = 'identity')
+
+```
+
 
 ### Sentiment analysis
 
