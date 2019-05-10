@@ -277,6 +277,8 @@ Creating a variable that organizes the episodes by season - note that this code 
 
 The assignment of an episode to a specific season had to be done by hand, by taking a look at the titles and figuring out which season they belong to.
 
+Note that not all seasons have the same number of episodes (some seasons have filler episodes) - thus, the average number of likes and comments per an episode in each season have also been calculated.
+
 ``` r
 seasons = webtoons_data %>% 
   select(season, episode_num, episode, comment_txt, likes_per_ep)
@@ -306,6 +308,31 @@ ggplot(likes_per_season, aes(x = season, y = total_likes, fill = season)) + geom
 ![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-6-1.png)
 
 ``` r
+#avg likes per episode by season
+avg_ep_likes_season = seasons %>% 
+  distinct(episode_num, .keep_all = TRUE) %>% 
+  group_by(season) %>% 
+  summarize(avg_ep_likes = mean(likes_per_ep)) 
+
+avg_ep_likes_season %>% 
+  knitr::kable(digits = 3) 
+```
+
+| season |  avg\_ep\_likes|
+|:-------|---------------:|
+| 1      |         323.167|
+| 2      |         246.250|
+| 3      |         208.615|
+| 4      |         116.500|
+
+``` r
+#visualization
+ggplot(avg_ep_likes_season, aes(x = season, y = avg_ep_likes, fill = season)) + geom_bar(stat = 'identity')
+```
+
+![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-6-2.png)
+
+``` r
 #total comments per season
 comments_per_season = seasons %>% 
   count(season) %>% 
@@ -327,7 +354,32 @@ comments_per_season %>%
 ggplot(comments_per_season, aes(x = season, y = total_comments, fill = season)) + geom_bar(stat = 'identity')
 ```
 
-![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-6-2.png)
+![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-6-3.png)
+
+``` r
+#avg likes per episode by season
+avg_ep_comments_season = seasons %>% 
+  count(season, episode) %>% 
+  group_by(season) %>% 
+  summarize(avg_ep_comments = mean(n)) 
+
+avg_ep_comments_season %>% 
+  knitr::kable(digits = 3)
+```
+
+| season |  avg\_ep\_comments|
+|:-------|------------------:|
+| 1      |             11.000|
+| 2      |             10.083|
+| 3      |             10.577|
+| 4      |              3.750|
+
+``` r
+#visualization
+ggplot(avg_ep_comments_season, aes(x = season, y = avg_ep_comments, fill = season)) + geom_bar(stat = 'identity')
+```
+
+![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-6-4.png)
 
 ### Sentiment analysis
 
