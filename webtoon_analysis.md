@@ -1,11 +1,11 @@
 Webtoon Analysis
 ================
 Bryce Wong
-May 10, 2019
+May 14, 2019
 
 ### Exploratory analysis of the Webtoon Comment data
 
-First reading in the data (updated as of April 24, 2019 - this was run BEFORE episode \#55 had been posted):
+First reading in the data (updated as of May 10, 2019 - this was run BEFORE episode \#55 had been posted):
 
 ``` r
 webtoons_data = read_csv(file = "./data/comments_may_10.csv")
@@ -34,7 +34,7 @@ webtoons_data = webtoons_data %>%
     episode_num = as.numeric(episode_num),
     season = ifelse(episode_num %in% 1:12, "1",
                     ifelse(episode_num %in% 13:24, "2",
-                           ifelse(episode_num %in% 25:50, "3", "4")))
+                           ifelse(episode_num %in% 25:37, "3", "4")))
   )
 
 number_of_eps = webtoons_data %>%
@@ -96,13 +96,13 @@ head(arrange(webtoons_data, desc(likes)), 10)
     ##  1           1 Heck o~ i love ham~ sub<U+~   125 FALSE          540 1     
     ##  2           1 Heck o~ omg is tha~ saphir~    93 FALSE          540 1     
     ##  3           1 Heck o~ Hamilton :~ swirli~    82 FALSE          540 1     
-    ##  4          40 Soluti~ I'm glad s~ frowsy     65 FALSE          218 3     
+    ##  4          40 Soluti~ I'm glad s~ frowsy     65 FALSE          218 4     
     ##  5          23 This C~ SHE HAD ON~ GrimmZ~    64 FALSE          246 2     
     ##  6           6 Brunch~ wait what.~ happyc~    56 FALSE          308 1     
     ##  7          30 You Ju~ Clearly ta~ coyowo~    56 FALSE          248 3     
     ##  8          32 WORLD ~ honestly t~ just y~    50 FALSE          289 3     
     ##  9           6 Brunch~ There will~ gillea~    49 FALSE          308 1     
-    ## 10          50 Tragedy "This one ~ pompou~    49 FALSE          149 3
+    ## 10          50 Tragedy "This one ~ pompou~    49 FALSE          149 4
 
 Now getting the number of comments per each unique user:
 
@@ -297,8 +297,8 @@ likes_per_season %>%
 |:-------|-------------:|
 | 1      |          3878|
 | 2      |          2955|
-| 3      |          5424|
-| 4      |           466|
+| 3      |          3143|
+| 4      |          2747|
 
 ``` r
 #visualization
@@ -322,8 +322,8 @@ avg_ep_likes_season %>%
 |:-------|---------------:|
 | 1      |         323.167|
 | 2      |         246.250|
-| 3      |         208.615|
-| 4      |         116.500|
+| 3      |         241.769|
+| 4      |         161.588|
 
 ``` r
 #visualization
@@ -346,8 +346,8 @@ comments_per_season %>%
 |:-------|----------------:|
 | 1      |              132|
 | 2      |              121|
-| 3      |              275|
-| 4      |               15|
+| 3      |              154|
+| 4      |              136|
 
 ``` r
 #visualization
@@ -357,7 +357,7 @@ ggplot(comments_per_season, aes(x = season, y = total_comments, fill = season)) 
 ![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-6-3.png)
 
 ``` r
-#avg likes per episode by season
+#avg comments per episode by season
 avg_ep_comments_season = seasons %>% 
   count(season, episode) %>% 
   group_by(season) %>% 
@@ -371,8 +371,8 @@ avg_ep_comments_season %>%
 |:-------|------------------:|
 | 1      |             11.000|
 | 2      |             10.083|
-| 3      |             10.577|
-| 4      |              3.750|
+| 3      |             11.846|
+| 4      |              8.000|
 
 ``` r
 #visualization
@@ -380,6 +380,116 @@ ggplot(avg_ep_comments_season, aes(x = season, y = avg_ep_comments, fill = seaso
 ```
 
 ![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-6-4.png)
+
+### Comparing filler episodes to regular episodes
+
+``` r
+#assigning "filler" label to filler episodes
+filler_data = seasons %>%  
+  mutate(
+    filler = ifelse(episode_num %in% 36:38, "yes",
+                    ifelse(episode_num == 32, "yes",
+                           ifelse(episode_num == 54, "yes", "no")))
+  )
+
+#average comments for filler episodes versus for non-filler episodes
+avg_ep_comments_filler = filler_data %>% 
+  count(season, episode_num, filler) %>% 
+  group_by(filler) %>% 
+  summarize(avg_ep_comments = mean(n)) 
+
+avg_ep_comments_filler %>% 
+  knitr::kable(digits = 3)
+```
+
+| filler |  avg\_ep\_comments|
+|:-------|------------------:|
+| no     |              9.776|
+| yes    |             12.800|
+
+``` r
+#visualization
+ggplot(avg_ep_comments_filler, aes(x = filler, y = avg_ep_comments, fill = filler)) + geom_bar(stat = 'identity')
+```
+
+![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-7-1.png)
+
+``` r
+#average likes for filler episodes versus for non-filler episodes
+avg_ep_likes_filler = filler_data %>% 
+  distinct(episode_num, .keep_all = TRUE) %>% 
+  group_by(filler) %>% 
+  summarize(avg_ep_likes = mean(likes_per_ep)) 
+
+avg_ep_likes_filler %>% 
+  knitr::kable(digits = 3) 
+```
+
+| filler |  avg\_ep\_likes|
+|:-------|---------------:|
+| no     |         240.204|
+| yes    |         190.600|
+
+``` r
+#visualization
+ggplot(avg_ep_likes_filler, aes(x = filler, y = avg_ep_likes, fill = filler)) + geom_bar(stat = 'identity')
+```
+
+![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-7-2.png)
+
+``` r
+#average comments by season, filler vs non-filler
+avg_comments_filler_season = filler_data %>% 
+  count(season, episode_num, filler) %>% 
+  group_by(season, filler) %>% 
+  summarize(avg_ep_comments = mean(n)) 
+
+avg_comments_filler_season %>% 
+  knitr::kable(digits = 3)
+```
+
+| season | filler |  avg\_ep\_comments|
+|:-------|:-------|------------------:|
+| 1      | no     |             11.000|
+| 2      | no     |             10.083|
+| 3      | no     |             10.100|
+| 3      | yes    |             17.667|
+| 4      | no     |              8.333|
+| 4      | yes    |              5.500|
+
+``` r
+#visualization
+ggplot(avg_comments_filler_season, aes(x = season, y = avg_ep_comments, fill = filler)) + geom_bar(stat = 'identity')
+```
+
+![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-7-3.png)
+
+``` r
+#average likes by season, filler vs non-filler
+avg_likes_filler_season = filler_data %>% 
+  distinct(episode_num, .keep_all = TRUE) %>% 
+  group_by(season, filler) %>% 
+  summarize(avg_ep_likes = mean(likes_per_ep)) 
+
+avg_likes_filler_season %>% 
+  knitr::kable(digits = 3) 
+```
+
+| season | filler |  avg\_ep\_likes|
+|:-------|:-------|---------------:|
+| 1      | no     |         323.167|
+| 2      | no     |         246.250|
+| 3      | no     |         246.700|
+| 3      | yes    |         225.333|
+| 4      | no     |         164.667|
+| 4      | yes    |         138.500|
+
+``` r
+#visualization
+ggplot(avg_likes_filler_season, aes(x = season, y = avg_ep_likes, fill = filler)) + geom_bar(stat = 'identity')
+```
+
+![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-7-4.png)
 
 ### Sentiment analysis
 
@@ -426,7 +536,7 @@ ggplot(comment_word_sentiments,
         axis.ticks.x = element_blank()) 
 ```
 
-![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-7-1.png)
+![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-8-1.png)
 
 Most positive comment:
 
@@ -450,12 +560,12 @@ comment_word_sentiments %>%
 
 Interestingly, cannot find the text for the comment with the lowest/highest sentiment in a specific like\_category - something to look into in the future.
 
-Exporting a text file of the comments:
+Exporting a text file of the comments (commented out for now):
 
 ``` r
-just_comments = webtoons_data %>%
-  filter(username != "TESTED @YGetIt on IG") %>% 
-  select(comment_txt)
+#just_comments = webtoons_data %>%
+  #filter(username != "TESTED @YGetIt on IG") %>% 
+  #select(comment_txt)
 
-write.table(just_comments, file = "just_comments.txt", sep = ",", quote = TRUE, row.names = F)
+#write.table(just_comments, file = "just_comments.txt", sep = ",", quote = TRUE, row.names = F)
 ```

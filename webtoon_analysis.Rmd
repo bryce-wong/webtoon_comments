@@ -1,7 +1,7 @@
 ---
 title: "Webtoon Analysis"
 author: "Bryce Wong"
-date: "May 10, 2019"
+date: "May 14, 2019"
 output: github_document
 ---
 
@@ -17,7 +17,7 @@ library(viridis)
 
 ### Exploratory analysis of the Webtoon Comment data
 
-First reading in the data (updated as of April 24, 2019 - this was run BEFORE episode #55 had been posted):
+First reading in the data (updated as of May 10, 2019 - this was run BEFORE episode #55 had been posted):
 
 ```{r reading in data}
 webtoons_data = read_csv(file = "./data/comments_may_10.csv")
@@ -30,7 +30,7 @@ webtoons_data = webtoons_data %>%
     episode_num = as.numeric(episode_num),
     season = ifelse(episode_num %in% 1:12, "1",
                     ifelse(episode_num %in% 13:24, "2",
-                           ifelse(episode_num %in% 25:50, "3", "4")))
+                           ifelse(episode_num %in% 25:37, "3", "4")))
   )
 
 number_of_eps = webtoons_data %>%
@@ -222,7 +222,7 @@ comments_per_season %>%
 #visualization
 ggplot(comments_per_season, aes(x = season, y = total_comments, fill = season)) + geom_bar(stat = 'identity')
 
-#avg likes per episode by season
+#avg comments per episode by season
 avg_ep_comments_season = seasons %>% 
   count(season, episode) %>% 
   group_by(season) %>% 
@@ -236,6 +236,66 @@ ggplot(avg_ep_comments_season, aes(x = season, y = avg_ep_comments, fill = seaso
 
 ```
 
+### Comparing filler episodes to regular episodes
+
+```{r}
+#assigning "filler" label to filler episodes
+filler_data = seasons %>%  
+  mutate(
+    filler = ifelse(episode_num %in% 36:38, "yes",
+                    ifelse(episode_num == 32, "yes",
+                           ifelse(episode_num == 54, "yes", "no")))
+  )
+
+#average comments for filler episodes versus for non-filler episodes
+avg_ep_comments_filler = filler_data %>% 
+  count(season, episode_num, filler) %>% 
+  group_by(filler) %>% 
+  summarize(avg_ep_comments = mean(n)) 
+
+avg_ep_comments_filler %>% 
+  knitr::kable(digits = 3)
+
+#visualization
+ggplot(avg_ep_comments_filler, aes(x = filler, y = avg_ep_comments, fill = filler)) + geom_bar(stat = 'identity')
+
+#average likes for filler episodes versus for non-filler episodes
+avg_ep_likes_filler = filler_data %>% 
+  distinct(episode_num, .keep_all = TRUE) %>% 
+  group_by(filler) %>% 
+  summarize(avg_ep_likes = mean(likes_per_ep)) 
+
+avg_ep_likes_filler %>% 
+  knitr::kable(digits = 3) 
+
+#visualization
+ggplot(avg_ep_likes_filler, aes(x = filler, y = avg_ep_likes, fill = filler)) + geom_bar(stat = 'identity')
+
+#average comments by season, filler vs non-filler
+avg_comments_filler_season = filler_data %>% 
+  count(season, episode_num, filler) %>% 
+  group_by(season, filler) %>% 
+  summarize(avg_ep_comments = mean(n)) 
+
+avg_comments_filler_season %>% 
+  knitr::kable(digits = 3)
+
+#visualization
+ggplot(avg_comments_filler_season, aes(x = season, y = avg_ep_comments, fill = filler)) + geom_bar(stat = 'identity')
+
+#average likes by season, filler vs non-filler
+avg_likes_filler_season = filler_data %>% 
+  distinct(episode_num, .keep_all = TRUE) %>% 
+  group_by(season, filler) %>% 
+  summarize(avg_ep_likes = mean(likes_per_ep)) 
+
+avg_likes_filler_season %>% 
+  knitr::kable(digits = 3) 
+
+#visualization
+ggplot(avg_likes_filler_season, aes(x = season, y = avg_ep_likes, fill = filler)) + geom_bar(stat = 'identity')
+
+```
 
 ### Sentiment analysis
 
@@ -290,13 +350,13 @@ comment_word_sentiments %>%
 
 Interestingly, cannot find the text for the comment with the lowest/highest sentiment in a specific like_category - something to look into in the future.
 
-Exporting a text file of the comments:
+Exporting a text file of the comments (commented out for now):
 
 ```{r}
-just_comments = webtoons_data %>%
-  filter(username != "TESTED @YGetIt on IG") %>% 
-  select(comment_txt)
+#just_comments = webtoons_data %>%
+  #filter(username != "TESTED @YGetIt on IG") %>% 
+  #select(comment_txt)
 
-write.table(just_comments, file = "just_comments.txt", sep = ",", quote = TRUE, row.names = F)
+#write.table(just_comments, file = "just_comments.txt", sep = ",", quote = TRUE, row.names = F)
 ```
 
