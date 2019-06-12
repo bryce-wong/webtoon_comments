@@ -20,7 +20,7 @@ library(viridis)
 First reading in the data (updated as of May 10, 2019 - this was run BEFORE episode #55 had been posted):
 
 ```{r reading in data}
-webtoons_data = read_csv(file = "./data/comments_may_10.csv")
+webtoons_data = read_csv(file = "./data/comments_june_12.csv")
 
 webtoons_data = webtoons_data %>% 
   filter(username != "TESTED @YGetIt on IG") %>% 
@@ -244,7 +244,7 @@ filler_data = seasons %>%
   mutate(
     filler = ifelse(episode_num %in% 36:38, "yes",
                     ifelse(episode_num == 32, "yes",
-                           ifelse(episode_num == 54, "yes", "no")))
+                           ifelse(episode_num == 54:57, "yes", "no")))
   )
 
 #average comments for filler episodes versus for non-filler episodes
@@ -294,6 +294,45 @@ avg_likes_filler_season %>%
 
 #visualization
 ggplot(avg_likes_filler_season, aes(x = season, y = avg_ep_likes, fill = filler)) + geom_bar(stat = 'identity')
+
+```
+
+### Comparing health messaging episodes to all other episodes
+
+Be aware that the labelling of health messaging episodes is hardcoded - to update this code for later scraping, you need to update the episodes included as health messaging.
+
+```{r}
+#assigning "health" label to health messaging episodes
+health_data = seasons %>%  
+  mutate(
+    health = ifelse(episode_num %in% 54:56, "yes",
+                ifelse(episode_num == 51, "yes",
+                    ifelse(episode_num == 32, "yes", "no")))
+  )
+
+#average comments for health messaging episodes versus for all other episodes
+avg_ep_comments_health = health_data %>% 
+  count(season, episode_num, health) %>% 
+  group_by(health) %>% 
+  summarize(avg_ep_comments = mean(n)) 
+
+avg_ep_comments_health %>% 
+  knitr::kable(digits = 3)
+
+#visualization
+ggplot(avg_ep_comments_health, aes(x = health, y = avg_ep_comments, fill = health)) + geom_bar(stat = 'identity')
+
+#average likes for health messaging episodes versus for all other episodes
+avg_ep_likes_health = health_data %>% 
+  distinct(episode_num, .keep_all = TRUE) %>% 
+  group_by(health) %>% 
+  summarize(avg_ep_likes = mean(likes_per_ep)) 
+
+avg_ep_likes_health %>% 
+  knitr::kable(digits = 3) 
+
+#visualization
+ggplot(avg_ep_likes_health, aes(x = health, y = avg_ep_likes, fill = health)) + geom_bar(stat = 'identity')
 
 ```
 

@@ -8,7 +8,7 @@ May 14, 2019
 First reading in the data (updated as of May 10, 2019 - this was run BEFORE episode \#55 had been posted):
 
 ``` r
-webtoons_data = read_csv(file = "./data/comments_may_10.csv")
+webtoons_data = read_csv(file = "./data/comments_june_12.csv")
 ```
 
     ## Warning: Missing column names filled in: 'X1' [1]
@@ -41,9 +41,9 @@ number_of_eps = webtoons_data %>%
   distinct(episode, .keep_all = TRUE)
 ```
 
-The total number of comments is 543.
+The total number of comments is 566.
 
-The total number of episodes is 54.
+The total number of episodes is 57.
 
 Now getting the number of comments per each episode:
 
@@ -70,11 +70,11 @@ num_eps %>%
 | Heck of a Start          |                    24|
 | Brunchy Brunch           |                    20|
 | Sometimes People SUCK!!! |                    18|
+| This Could Be Bad        |                    18|
 | FIGHT!!!!                |                    17|
 | HAPPY NEW YEAR!!!!!      |                    17|
 | Doctor Visit             |                    16|
 | Prayers                  |                    16|
-| This Could Be Bad        |                    16|
 | Further South            |                    15|
 
 Now getting the number of likes per each comment:
@@ -93,16 +93,16 @@ head(arrange(webtoons_data, desc(likes)), 10)
     ## # A tibble: 10 x 8
     ##    episode_num episode comment_txt userna~ likes reply likes_per_ep season
     ##          <dbl> <chr>   <chr>       <chr>   <int> <lgl>        <int> <chr> 
-    ##  1           1 Heck o~ i love ham~ sub<U+~   125 FALSE          540 1     
-    ##  2           1 Heck o~ omg is tha~ saphir~    93 FALSE          540 1     
-    ##  3           1 Heck o~ Hamilton :~ swirli~    82 FALSE          540 1     
-    ##  4          40 Soluti~ I'm glad s~ frowsy     65 FALSE          218 4     
-    ##  5          23 This C~ SHE HAD ON~ GrimmZ~    64 FALSE          246 2     
-    ##  6           6 Brunch~ wait what.~ happyc~    56 FALSE          308 1     
-    ##  7          30 You Ju~ Clearly ta~ coyowo~    56 FALSE          248 3     
-    ##  8          32 WORLD ~ honestly t~ just y~    50 FALSE          289 3     
-    ##  9           6 Brunch~ There will~ gillea~    49 FALSE          308 1     
-    ## 10          50 Tragedy "This one ~ pompou~    49 FALSE          149 4
+    ##  1           1 Heck o~ i love ham~ sub<U+~   125 FALSE          545 1     
+    ##  2           1 Heck o~ omg is tha~ saphir~    93 FALSE          545 1     
+    ##  3           1 Heck o~ Hamilton :~ swirli~    82 FALSE          545 1     
+    ##  4          40 Soluti~ I'm glad s~ frowsy     66 FALSE          221 4     
+    ##  5          23 This C~ SHE HAD ON~ GrimmZ~    65 FALSE          248 2     
+    ##  6          30 You Ju~ Clearly ta~ coyowo~    58 FALSE          251 3     
+    ##  7           6 Brunch~ wait what.~ happyc~    57 FALSE          312 1     
+    ##  8          50 Tragedy "This one ~ pompou~    54 FALSE          152 4     
+    ##  9           6 Brunch~ There will~ gillea~    51 FALSE          312 1     
+    ## 10          32 WORLD ~ honestly t~ just y~    51 FALSE          291 3
 
 Now getting the number of comments per each unique user:
 
@@ -123,19 +123,21 @@ num_users %>%
 
     ## Selecting by n
 
-    ## # A tibble: 10 x 2
+    ## # A tibble: 12 x 2
     ##    username                   number_of_comments
     ##    <chr>                                   <int>
     ##  1 gilleanfryingpan                           45
-    ##  2 sausage172000                              22
-    ##  3 AoiYeyi                                    21
+    ##  2 AoiYeyi                                    22
+    ##  3 sausage172000                              22
     ##  4 happycat(:                                 18
     ##  5 19danny15                                  16
     ##  6 Cheapthrill_Xo                             16
     ##  7 CopperMortar                               14
-    ##  8 "\xb0\x95Mariella\x95\xb0"                 12
+    ##  8 "\xb0\x95Mariella\x95\xb0"                 13
     ##  9 catberra                                   12
-    ## 10 RedtheGreyFox                              12
+    ## 10 "Johnna\x92s Way"                          12
+    ## 11 Mugly Mae                                  12
+    ## 12 RedtheGreyFox                              12
 
 -   Outputting table of top 10 episodes by number of episode likes
 
@@ -155,16 +157,16 @@ head(arrange(ep_likes, desc(likes_per_ep)), 10) %>%
 
 | episode                      |  likes\_per\_ep|
 |:-----------------------------|---------------:|
-| Heck of a Start              |             540|
-| Uh oh                        |             435|
-| Flash Back                   |             370|
-| Doctor Visit                 |             338|
-| Work It Out                  |             335|
-| Brunchy Brunch               |             308|
-| WORLD AIDS DAY!!!            |             289|
-| Rough Start                  |             279|
-| It Goes Down in the Bathroom |             267|
-| Ape S\#$%                    |             262|
+| Heck of a Start              |             545|
+| Uh oh                        |             439|
+| Flash Back                   |             373|
+| Doctor Visit                 |             342|
+| Work It Out                  |             338|
+| Brunchy Brunch               |             312|
+| WORLD AIDS DAY!!!            |             291|
+| Rough Start                  |             282|
+| It Goes Down in the Bathroom |             270|
+| Ape S\#$%                    |             265|
 
 Now a bunch of tables showing basic summary statistics for:
 
@@ -189,7 +191,7 @@ avg_num_comm
 
 |  mean\_comments\_per\_ep|  median\_comments\_per\_ep|  sd\_comments|
 |------------------------:|--------------------------:|-------------:|
-|                   10.056|                          9|         5.272|
+|                     9.93|                          8|         5.321|
 
 ``` r
 #stats of commentators
@@ -204,7 +206,7 @@ avg_user
 
 |  mean\_comments\_per\_user|  median\_comments\_per\_user|  sd\_comments|
 |--------------------------:|----------------------------:|-------------:|
-|                      2.828|                            1|         4.705|
+|                      2.903|                            1|         4.786|
 
 ``` r
 #stats of likes
@@ -219,7 +221,7 @@ avg_likes
 
 |  mean\_likes\_per\_comment|  median\_likes\_per\_comment|  sd\_likes|
 |--------------------------:|----------------------------:|----------:|
-|                      7.576|                            4|     11.791|
+|                      7.528|                            4|     11.785|
 
 ``` r
 #stats of total comment likes
@@ -236,7 +238,7 @@ avg_total_likes
 
 |  mean\_total\_likes|  median\_total\_likes|  sd\_total\_likes|
 |-------------------:|---------------------:|-----------------:|
-|              76.185|                  58.5|            66.315|
+|              74.754|                    57|            66.136|
 
 ``` r
 #stats of likes per episode (likes of episode - NOT comments)
@@ -252,7 +254,7 @@ avg_likes_per_ep
 
 |  mean\_likes\_per\_ep|  median\_likes\_per\_ep|  sd\_likes|
 |---------------------:|-----------------------:|----------:|
-|               235.611|                   243.5|     75.424|
+|               231.877|                     245|     78.863|
 
 ``` r
 #visualizations
@@ -295,10 +297,10 @@ likes_per_season %>%
 
 | season |  total\_likes|
 |:-------|-------------:|
-| 1      |          3878|
-| 2      |          2955|
-| 3      |          3143|
-| 4      |          2747|
+| 1      |          3918|
+| 2      |          2982|
+| 3      |          3176|
+| 4      |          3141|
 
 ``` r
 #visualization
@@ -320,10 +322,10 @@ avg_ep_likes_season %>%
 
 | season |  avg\_ep\_likes|
 |:-------|---------------:|
-| 1      |         323.167|
-| 2      |         246.250|
-| 3      |         241.769|
-| 4      |         161.588|
+| 1      |         326.500|
+| 2      |         248.500|
+| 3      |         244.308|
+| 4      |         157.050|
 
 ``` r
 #visualization
@@ -345,9 +347,9 @@ comments_per_season %>%
 | season |  total\_comments|
 |:-------|----------------:|
 | 1      |              132|
-| 2      |              121|
-| 3      |              154|
-| 4      |              136|
+| 2      |              128|
+| 3      |              159|
+| 4      |              147|
 
 ``` r
 #visualization
@@ -370,9 +372,9 @@ avg_ep_comments_season %>%
 | season |  avg\_ep\_comments|
 |:-------|------------------:|
 | 1      |             11.000|
-| 2      |             10.083|
-| 3      |             11.846|
-| 4      |              8.000|
+| 2      |             10.667|
+| 3      |             12.231|
+| 4      |              7.350|
 
 ``` r
 #visualization
@@ -389,9 +391,14 @@ filler_data = seasons %>%
   mutate(
     filler = ifelse(episode_num %in% 36:38, "yes",
                     ifelse(episode_num == 32, "yes",
-                           ifelse(episode_num == 54, "yes", "no")))
+                           ifelse(episode_num == 54:57, "yes", "no")))
   )
+```
 
+    ## Warning in episode_num == 54:57: longer object length is not a multiple of
+    ## shorter object length
+
+``` r
 #average comments for filler episodes versus for non-filler episodes
 avg_ep_comments_filler = filler_data %>% 
   count(season, episode_num, filler) %>% 
@@ -404,8 +411,8 @@ avg_ep_comments_filler %>%
 
 | filler |  avg\_ep\_comments|
 |:-------|------------------:|
-| no     |              9.776|
-| yes    |             12.800|
+| no     |              9.472|
+| yes    |              9.143|
 
 ``` r
 #visualization
@@ -427,8 +434,8 @@ avg_ep_likes_filler %>%
 
 | filler |  avg\_ep\_likes|
 |:-------|---------------:|
-| no     |         240.204|
-| yes    |         190.600|
+| no     |         235.077|
+| yes    |         198.600|
 
 ``` r
 #visualization
@@ -451,11 +458,11 @@ avg_comments_filler_season %>%
 | season | filler |  avg\_ep\_comments|
 |:-------|:-------|------------------:|
 | 1      | no     |             11.000|
-| 2      | no     |             10.083|
-| 3      | no     |             10.100|
+| 2      | no     |             10.667|
+| 3      | no     |             10.600|
 | 3      | yes    |             17.667|
-| 4      | no     |              8.333|
-| 4      | yes    |              5.500|
+| 4      | no     |              7.158|
+| 4      | yes    |              2.750|
 
 ``` r
 #visualization
@@ -477,12 +484,12 @@ avg_likes_filler_season %>%
 
 | season | filler |  avg\_ep\_likes|
 |:-------|:-------|---------------:|
-| 1      | no     |         323.167|
-| 2      | no     |         246.250|
-| 3      | no     |         246.700|
-| 3      | yes    |         225.333|
-| 4      | no     |         164.667|
-| 4      | yes    |         138.500|
+| 1      | no     |         326.500|
+| 2      | no     |         248.500|
+| 3      | no     |         249.400|
+| 3      | yes    |         227.333|
+| 4      | no     |         157.222|
+| 4      | yes    |         155.500|
 
 ``` r
 #visualization
@@ -490,6 +497,64 @@ ggplot(avg_likes_filler_season, aes(x = season, y = avg_ep_likes, fill = filler)
 ```
 
 ![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-7-4.png)
+
+### Comparing health messaging episodes to all other episodes
+
+Be aware that the labelling of health messaging episodes is hardcoded - to update this code for later scraping, you need to update the episodes included as health messaging.
+
+``` r
+#assigning "health" label to health messaging episodes
+health_data = seasons %>%  
+  mutate(
+    health = ifelse(episode_num %in% 54:56, "yes",
+                ifelse(episode_num == 51, "yes",
+                    ifelse(episode_num == 32, "yes", "no")))
+  )
+
+#average comments for health messaging episodes versus for all other episodes
+avg_ep_comments_health = health_data %>% 
+  count(season, episode_num, health) %>% 
+  group_by(health) %>% 
+  summarize(avg_ep_comments = mean(n)) 
+
+avg_ep_comments_health %>% 
+  knitr::kable(digits = 3)
+```
+
+| health |  avg\_ep\_comments|
+|:-------|------------------:|
+| no     |             10.173|
+| yes    |              7.400|
+
+``` r
+#visualization
+ggplot(avg_ep_comments_health, aes(x = health, y = avg_ep_comments, fill = health)) + geom_bar(stat = 'identity')
+```
+
+![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-8-1.png)
+
+``` r
+#average likes for health messaging episodes versus for all other episodes
+avg_ep_likes_health = health_data %>% 
+  distinct(episode_num, .keep_all = TRUE) %>% 
+  group_by(health) %>% 
+  summarize(avg_ep_likes = mean(likes_per_ep)) 
+
+avg_ep_likes_health %>% 
+  knitr::kable(digits = 3) 
+```
+
+| health |  avg\_ep\_likes|
+|:-------|---------------:|
+| no     |         239.192|
+| yes    |         155.800|
+
+``` r
+#visualization
+ggplot(avg_ep_likes_health, aes(x = health, y = avg_ep_likes, fill = health)) + geom_bar(stat = 'identity')
+```
+
+![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-8-2.png)
 
 ### Sentiment analysis
 
@@ -536,7 +601,7 @@ ggplot(comment_word_sentiments,
         axis.ticks.x = element_blank()) 
 ```
 
-![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-8-1.png)
+![](webtoon_analysis_files/figure-markdown_github/unnamed-chunk-9-1.png)
 
 Most positive comment:
 
